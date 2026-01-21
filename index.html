@@ -4,65 +4,55 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shreeji Digital Menu</title>
-<link rel="manifest" href="manifest.json">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8f9fa}
 
 /* Header */
-.header{position:sticky;top:0;background:#fff;z-index:100;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.header{position:sticky;top:0;background:#fff;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:10}
 .logo{font-size:1.5rem;font-weight:700}
 .search{width:100%;padding:.7rem;border-radius:25px;border:1px solid #ddd;margin:.8rem 0}
 
 /* Categories */
-.categories{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0}
-.category{padding:.4rem 1rem;border-radius:20px;background:#eee;white-space:nowrap;cursor:pointer}
+.categories{display:flex;gap:.5rem;overflow-x:auto}
+.category{padding:.4rem 1rem;border-radius:20px;background:#eee;cursor:pointer;white-space:nowrap}
 .category.active{background:#ff6b35;color:#fff}
 
 /* Menu */
 .menu-grid{padding:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
-.item-card{background:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+.item-card{background:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
 .item-image{height:120px;background:#ddd}
 .item-image img{width:100%;height:100%;object-fit:cover}
 .item-name{padding:.6rem;font-weight:600}
 .item-price{padding:0 .6rem .6rem;color:#ff6b35;font-weight:700}
 .add-btn{width:100%;padding:.6rem;border:none;background:#ff6b35;color:#fff;font-weight:600}
 
-/* Cart */
+/* Cart bar */
 .cart-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:1rem;box-shadow:0 -4px 10px rgba(0,0,0,.1);display:none}
 .cart-bar.show{display:block}
-.checkout-btn{background:#28a745;color:#fff;padding:.8rem;text-align:center;border-radius:10px;font-weight:600}
+.checkout-btn{background:#28a745;color:#fff;padding:.8rem;border-radius:10px;text-align:center;font-weight:600}
 
-/* Loader */
-.loader{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
-.loader.show{display:flex}
-.spinner{width:50px;height:50px;border:4px solid #eee;border-top:4px solid #ff6b35;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Portion Sheet */
+/* Sheet animation */
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.portion-card{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:.9rem;border-radius:12px;border:1.5px solid #ddd;cursor:pointer
-}
-.portion-card.active{
-  border-color:#ff6b35;background:#fff4ee
-}
+
+/* Portion selector */
+.portion-card{display:flex;justify-content:space-between;align-items:center;padding:.9rem;border-radius:12px;border:1.5px solid #ddd;cursor:pointer}
+.portion-card.active{border-color:#ff6b35;background:#fff4ee}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div class="logo" id="brandLogo"></div>
-  <input class="search" id="search" placeholder="Search items">
+  <div class="logo">🍽️ Shreeji Restaurant</div>
+  <input class="search" placeholder="Search items">
   <div class="categories" id="categories"></div>
 </div>
 
 <div class="menu-grid" id="menu"></div>
 
-<div class="cart-bar" id="cartBar" onclick="openCart()" >
+<div class="cart-bar" id="cartBar" onclick="openCart()">
   <div style="display:flex;justify-content:space-between">
     <span>Cart <b id="count">0</b></span>
     <span id="total">₹0</span>
@@ -70,232 +60,107 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="checkout-btn" onclick="checkout()">Send to Kitchen</div>
 </div>
 
-<div class="loader" id="loader"><div class="spinner"></div></div>
-
 <!-- Portion Selector -->
-<div id="portionSheet" style="
-  position:fixed;inset:0;background:rgba(0,0,0,.45);
-  display:none;align-items:flex-end;z-index:2000">
-  <div style="
-    background:#fff;width:100%;
-    border-radius:20px 20px 0 0;
-    padding:1rem;animation:slideUp .25s ease">
-    <div style="display:flex;gap:1rem">
-      <img id="psImage" style="width:72px;height:72px;border-radius:12px;object-fit:cover">
-      <div>
-        <div id="psName" style="font-weight:700;font-size:1.1rem"></div>
-        <div style="font-size:.85rem;color:#777">Choose portion</div>
-      </div>
-    </div>
-
+<div id="portionSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:2000">
+  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:1rem;animation:slideUp .25s">
+    <div style="font-weight:700" id="psName"></div>
     <div id="portionOptions" style="margin-top:1rem;display:grid;gap:.7rem"></div>
-
-    <button onclick="confirmPortion()" style="
-      margin-top:1rem;width:100%;
-      padding:.9rem;background:#28a745;
-      color:#fff;border:none;border-radius:12px;
-      font-weight:700;font-size:1rem">
+    <button onclick="confirmPortion()" style="margin-top:1rem;width:100%;padding:.9rem;background:#28a745;color:#fff;border:none;border-radius:12px;font-weight:700">
       ADD TO CART
     </button>
   </div>
 </div>
 
+<!-- Cart Sheet -->
+<div id="cartSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:3000">
+  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:1rem;max-height:70vh;overflow:auto;animation:slideUp .25s">
+    <div style="font-weight:700;margin-bottom:.5rem">Your Cart</div>
+    <div id="cartItems"></div>
+    <div style="margin-top:1rem;border-top:1px solid #eee;padding-top:1rem">
+      <div style="display:flex;justify-content:space-between;font-weight:700">
+        <span>Total</span>
+        <span id="cartTotal">₹0</span>
+      </div>
+      <button onclick="checkout()" style="margin-top:.8rem;width:100%;padding:.9rem;background:#28a745;color:#fff;border:none;border-radius:12px;font-weight:700">
+        Send to Kitchen
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ---------- CONFIG ---------- */
-const BRAND_CONFIG={
-  cafe:{name:"☕ Shreeji Cafe"},
-  restaurant:{name:"🍽️ Shreeji Restaurant"},
-  pizzaghar:{name:"🍕 PizzaGhar"}
-};
-
-const params=new URLSearchParams(location.search);
-const brandKey=params.get("brand")||"restaurant";
-const table=params.get("table")||"NA";
-
-document.getElementById("brandLogo").textContent=BRAND_CONFIG[brandKey].name;
-
 /* ---------- STATE ---------- */
-let menu=[];
-let cart=JSON.parse(localStorage.getItem(`cart_${brandKey}_${table}`)||"[]");
-let currentCategory="All";
-let selectedItem=null;
-let selectedPortion="full";
+let menu=[], cart=[];
+let selectedItem=null, selectedPortion="full";
 
-  let cartSheet, cartItems, cartTotal;
+/* ---------- DOM ---------- */
+const menuEl = document.getElementById("menu");
+const categoriesEl = document.getElementById("categories");
+const cartBar = document.getElementById("cartBar");
+const countEl = document.getElementById("count");
+const totalEl = document.getElementById("total");
+const cartSheet = document.getElementById("cartSheet");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
+const portionSheet = document.getElementById("portionSheet");
+const psName = document.getElementById("psName");
+const portionOptions = document.getElementById("portionOptions");
 
-/* ---------- MENU ---------- */
-async function loadMenu() {
-  try {
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu"
-    );
+/* ---------- LOAD MENU ---------- */
+async function loadMenu(){
+  try{
+    const res = await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu");
     const json = await res.json();
-
-    // ✅ FIX: extract actual array safely
     const rows = Array.isArray(json) ? json : json.data;
-
-    if (!Array.isArray(rows)) throw new Error("Menu data invalid");
-
-    menu = normalizeMenu(rows);
-  } catch (e) {
-    console.error("Menu load failed", e);
-
-    // fallback menu
-    menu = normalizeMenu([
-      [1, "Sample Item", "General", 120, 70, "https://via.placeholder.com/300"]
-    ]);
+    menu = rows.map(r=>({
+      id:r[0], name:r[1], category:r[2],
+      fullPrice:+r[3]||0, halfPrice:+r[4]||0,
+      image:r[5]||"https://via.placeholder.com/300"
+    }));
+  }catch{
+    menu=[{id:1,name:"Sample Item",category:"General",fullPrice:120,halfPrice:70,image:"https://via.placeholder.com/300"}];
   }
-
   renderCategories();
   renderMenu();
 }
 
-
-function normalizeMenu(data) {
-  return data.map(row => {
-
-    // Google Sheet row (array)
-    if (Array.isArray(row)) {
-      const id = row[0];
-      const name = row[1];
-      const category = row[2];
-
-      // SAFE price detection
-      const fullPrice = Number(row[3]) || 0;
-      const halfPrice = Number(row[4]) || 0;
-
-      // Image may be index 4 or 5 depending on sheet
-      const image =
-        row[5] ||
-        row[4]?.startsWith("http") && row[4] ||
-        "https://via.placeholder.com/300";
-
-      return {
-        id,
-        name,
-        category,
-        fullPrice,
-        halfPrice,
-        image
-      };
-    }
-
-    // Object fallback
-    return {
-      id: row.id,
-      name: row.name,
-      category: row.category,
-      fullPrice: Number(row.fullPrice || row.full_price || row.price || 0),
-      halfPrice: Number(row.halfPrice || row.half_price || 0),
-      image: row.image || "https://via.placeholder.com/300"
-    };
-  });
-}
-function openCart() {
-  renderCartItems();
-  cartSheet.style.display = "flex";
-}
-
-function renderCartItems() {
-  if (!cart.length) {
-    cartItems.innerHTML = "<p style='text-align:center;color:#777'>Cart is empty</p>";
-    cartTotal.textContent = "₹0";
-    return;
-  }
-
-  cartItems.innerHTML = cart.map((item, i) => `
-    <div style="
-      display:flex;justify-content:space-between;
-      align-items:center;margin-bottom:.8rem">
-      <div>
-        <div style="font-weight:600">${item.name}</div>
-        <div style="font-size:.85rem;color:#777">
-          ₹${item.price} × ${item.qty}
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:.6rem">
-        <button onclick="changeQty(${i},-1)" style="width:28px;height:28px">−</button>
-        <b>${item.qty}</b>
-        <button onclick="changeQty(${i},1)" style="width:28px;height:28px">+</button>
-      </div>
-    </div>
-  `).join("");
-
-  cartTotal.textContent =
-    "₹" + cart.reduce((a, b) => a + b.qty * b.price, 0);
-}
-
-function changeQty(index, delta) {
-  cart[index].qty += delta;
-  if (cart[index].qty <= 0) cart.splice(index, 1);
-  updateCart();
-  renderCartItems();
-}
-
-
+/* ---------- UI ---------- */
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
-  categories.innerHTML=cats.map(c=>
-    `<div class="category ${c==="All"?"active":""}" onclick="setCat('${c}',this)">${c}</div>`
-  ).join("");
+  categoriesEl.innerHTML=cats.map(c=>`<div class="category" onclick="filterCat('${c}',this)">${c}</div>`).join("");
+  categoriesEl.firstChild.classList.add("active");
 }
 
-function setCat(cat,el){
-  currentCategory=cat;
+function filterCat(cat,el){
   document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
   el.classList.add("active");
-  renderMenu();
+  renderMenu(cat);
 }
 
-function renderMenu(){
-  menuEl.innerHTML=menu
-    .filter(i=>currentCategory==="All"||i.category===currentCategory)
-    .map(i=>`
-      <div class="item-card">
-        <div class="item-image"><img src="${i.image}"></div>
-        <div class="item-name">${i.name}</div>
-        <div class="item-price">
-          ${i.halfPrice>0?`<small>Half ₹${i.halfPrice}</small><br>`:""}
-          <b>Full ₹${i.fullPrice}</b>
-        </div>
-        <button class="add-btn" onclick="openPortionSelector(${i.id})">ADD</button>
+function renderMenu(cat="All"){
+  menuEl.innerHTML=menu.filter(i=>cat==="All"||i.category===cat).map(i=>`
+    <div class="item-card">
+      <div class="item-image"><img src="${i.image}"></div>
+      <div class="item-name">${i.name}</div>
+      <div class="item-price">
+        ${i.halfPrice?`<small>Half ₹${i.halfPrice}</small><br>`:""}
+        Full ₹${i.fullPrice}
       </div>
-    `).join("");
+      <button class="add-btn" onclick="openPortion(${i.id})">ADD</button>
+    </div>`).join("");
 }
 
-/* ---------- PORTION SELECTOR ---------- */
-function openPortionSelector(id) {
-  const item = menu.find(i => i.id === id);
-
-  // ✅ AUTO-SKIP POPUP (FULL ONLY)
-  if (!item.halfPrice || item.halfPrice <= 0) {
-    addToCart(item, "full");
-    return;
-  }
-
-  // ⬇️ SHOW POPUP ONLY IF HALF EXISTS
-  selectedItem = item;
-  selectedPortion = "full";
-
-  psImage.src = item.image;
-  psName.textContent = item.name;
-
-  portionOptions.innerHTML = `
-    <div class="portion-card" onclick="selectPortion('half',this)">
-      <div>Half Portion</div>
-      <b>₹${item.halfPrice}</b>
-    </div>
-
-    <div class="portion-card active" onclick="selectPortion('full',this)">
-      <div>Full Portion</div>
-      <b>₹${item.fullPrice}</b>
-    </div>
-  `;
-
-  portionSheet.style.display = "flex";
+/* ---------- PORTION ---------- */
+function openPortion(id){
+  const item=menu.find(i=>i.id===id);
+  if(!item.halfPrice){ add(item,"full"); return; }
+  selectedItem=item; selectedPortion="full";
+  psName.textContent=item.name;
+  portionOptions.innerHTML=`
+    <div class="portion-card" onclick="selectPortion('half',this)">Half ₹${item.halfPrice}</div>
+    <div class="portion-card active" onclick="selectPortion('full',this)">Full ₹${item.fullPrice}</div>`;
+  portionSheet.style.display="flex";
 }
-
 
 function selectPortion(p,el){
   selectedPortion=p;
@@ -304,111 +169,59 @@ function selectPortion(p,el){
 }
 
 function confirmPortion(){
-  addToCart(selectedItem,selectedPortion);
+  add(selectedItem,selectedPortion);
   portionSheet.style.display="none";
 }
 
-portionSheet.onclick=e=>{
-  if(e.target.id==="portionSheet")portionSheet.style.display="none";
-};
-
 /* ---------- CART ---------- */
-function addToCart(item,portion){
+function add(item,portion){
   const price=portion==="half"?item.halfPrice:item.fullPrice;
   const key=item.id+"_"+portion;
-  const found=cart.find(i=>i.key===key);
-  found?found.qty++:cart.push({key,name:`${item.name} (${portion.toUpperCase()})`,price,qty:1});
+  const f=cart.find(i=>i.key===key);
+  f?f.qty++:cart.push({key,name:`${item.name} (${portion.toUpperCase()})`,price,qty:1});
   updateCart();
 }
 
 function updateCart(){
-  count.textContent=cart.reduce((a,b)=>a+b.qty,0);
-  total.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
+  const total=cart.reduce((a,b)=>a+b.qty*b.price,0);
+  countEl.textContent=cart.reduce((a,b)=>a+b.qty,0);
+  totalEl.textContent="₹"+total;
   cartBar.classList.toggle("show",cart.length>0);
-  localStorage.setItem(`cart_${brandKey}_${table}`,JSON.stringify(cart));
+}
 
-  if (cartSheet.style.display === "flex") renderCartItems();
+function openCart(){
+  cartItems.innerHTML=cart.map((i,idx)=>`
+    <div style="display:flex;justify-content:space-between;margin-bottom:.6rem">
+      <div>${i.name}<br><small>₹${i.price} × ${i.qty}</small></div>
+      <div>
+        <button onclick="chg(${idx},-1)">−</button>
+        ${i.qty}
+        <button onclick="chg(${idx},1)">+</button>
+      </div>
+    </div>`).join("");
+  cartTotal.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
+  cartSheet.style.display="flex";
+}
 
+function chg(i,d){
+  cart[i].qty+=d;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  updateCart();
+  openCart();
 }
 
 /* ---------- CHECKOUT ---------- */
-async function checkout(){
-  if(!cart.length)return;
-  loader.classList.add("show");
-  try{
-    await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"placeOrder",brand:brandKey,table,items:cart})
-    });
-    alert("Order sent to kitchen");
-    cart=[];
-    updateCart();
-  }catch{
-    alert("Offline: order saved");
-  }finally{
-    loader.classList.remove("show");
-  }
+function checkout(){
+  alert("Order sent to kitchen");
+  cart=[];updateCart();cartSheet.style.display="none";
 }
 
-/* ---------- INIT ---------- */
-const menuEl=document.getElementById("menu");
-cartSheet = document.getElementById("cartSheet");
-cartItems = document.getElementById("cartItems");
-cartTotal = document.getElementById("cartTotal");
-cartSheet.onclick = e => {
-  if (e.target.id === "cartSheet") {
-    cartSheet.style.display = "none";
-  }
-};
+cartSheet.onclick=e=>{if(e.target===cartSheet)cartSheet.style.display="none";}
+portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
 
+/* ---------- START ---------- */
 loadMenu();
 </script>
-
-  
-  <!-- Cart Sheet -->
-<div id="cartSheet" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:flex-end;
-  z-index:3000;
-">
-  <div style="
-    background:#fff;
-    width:100%;
-    border-radius:20px 20px 0 0;
-    max-height:70vh;
-    overflow:auto;
-    padding:1rem;
-    animation:slideUp .25s ease;
-  ">
-    <div style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem">
-      Your Cart
-    </div>
-
-    <div id="cartItems"></div>
-
-    <div style="margin-top:1rem;border-top:1px solid #eee;padding-top:1rem">
-      <div style="display:flex;justify-content:space-between;font-weight:700">
-        <span>Total</span>
-        <span id="cartTotal">₹0</span>
-      </div>
-      <button onclick="checkout()" style="
-        margin-top:.8rem;
-        width:100%;
-        padding:.9rem;
-        background:#28a745;
-        color:#fff;
-        border:none;
-        border-radius:12px;
-        font-weight:700;
-        font-size:1rem
-      ">Send to Kitchen</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
