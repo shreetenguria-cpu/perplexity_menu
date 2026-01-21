@@ -19,6 +19,90 @@
     .complete-btn { width: 100%; padding: 1rem; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; }
     @media (max-width: 768px) { .kot-grid { grid-template-columns: 1fr; } }
   </style>
+
+  <!-- Add to kitchen.html head -->
+<style>
+  .offline-warning { 
+    position:fixed;top:0;left:0;right:0;background:#ffc107;color:black;
+    padding:1rem;text-align:center;font-weight:600;z-index:1000;display:none;
+  }
+  .offline .offline-warning { display:block; }
+</style>
+
+<!-- Add after <h1> -->
+<div class="offline-warning" id="offline-warning">
+  🔌 OFFLINE MODE - Showing cached orders
+</div>
+
+<script>
+let cachedKOTs = JSON.parse(localStorage.getItem('localKOTs') || '[]');
+
+async function loadKOTs() {
+  try {
+    const res = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=kot_status`);
+    const onlineKOTs = await res.json();
+    
+    // Merge online + local orders
+    const allKOTs = [...onlineKOTs.filter(k => k[4] !== 'Completed'), ...cachedKOTs]
+      .filter(kot => kot[4] !== 'Completed');
+    
+    localStorage.setItem('localKOTs', JSON.stringify(allKOTs));
+    displayKOTs(allKOTs);
+    document.body.classList.remove('offline');
+  } catch(e) {
+    // Offline - show cached + local orders
+    const allKOTs = cachedKOTs.filter(kot => kot[4] !== 'Completed');
+    displayKOTs(allKOTs);
+    document.body.classList.add('offline');
+  }
+}
+
+// Update displayKOTs to handle local KOTs
+function displayKOTs(kots) {
+  document.getElementById('kot-grid').innerHTML = kots.map((kot, index) => {
+    const timeDiff = (new Date() - new Date(kot[3])) / (1000 * 60);
+    const colorClass = timeDiff < 8 ? 'green' : timeDiff < 12 ? 'yellow' : 'red';
+    const items = typeof kot[2] === 'string' ? JSON.parse(kot[2]) : kot[2];
+    const isLocal = !kot.synced;
+    
+    return `
+      <div class="kot-card ${isLocal ? 'local-order' : ''}">
+        <div class="kot-header">
+          <div class="kot-num">${kot[0]}</div>
+          <div class="table-num ${isLocal ? 'blink' : ''}">Table ${kot[1]} ${isLocal ? '🟡' : ''}</div>
+        </div>
+        <div class="items">
+          ${items.map(item => `<div class="item">${item.name} x${item.qty}</div>`).join('')}
+        </div>
+        <div class="timer ${colorClass}">${Math.floor(timeDiff)}m</div>
+        <button class="complete-btn ${isLocal ? 'local-btn' : ''}" 
+                onclick="completeKOT('${kot[0]}', ${index})">
+          ${isLocal ? '✓ LOCAL' : '✓ COMPLETE'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function completeKOT(kotId, index) {
+  const kot = cachedKOTs[index];
+  
+  if (!kot.synced) {
+    // Local order - mark as completed locally
+    cachedKOTs[index] = {...kot, status: 'Completed'};
+    localStorage.setItem('localKOTs', JSON.stringify(cachedKOTs));
+  } else {
+    // Online order - call API
+    await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+      method: 'POST',
+      body: JSON.stringify({action: 'completeKOT', kot: kotId})
+    });
+  }
+  
+  loadKOTs();
+}
+</script>
+
 </head>
 <body>
   <h1 style="text-align: center; margin-bottom: 2rem; font-size: 3rem;">🍳 KITCHEN DISPLAY</h1>
