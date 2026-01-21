@@ -89,17 +89,59 @@
       navigator.serviceWorker.register('sw.js');
     }
     
-    // Load menu
-    async function loadMenu() {
-      try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec`);
-        menu = await res.json();
-        displayCategories();
-        displayMenu();
-      } catch(e) {
-        console.error('Menu load failed:', e);
-      }
+    // Replace your loadMenu function with this:
+async function loadMenu() {
+  const grid = document.getElementById('menu-grid');
+  grid.innerHTML = '<div class="shimmer" style="grid-column:1/-1;padding:2rem;text-align:center">Loading menu...</div>';
+  
+  try {
+    const res = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=menu`, {
+      cache: 'no-cache'
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
+    
+    const text = await res.text();
+    console.log('Raw API response:', text); // Debug log
+    
+    let menuData;
+    try {
+      menuData = JSON.parse(text);
+    } catch (jsonError) {
+      console.error('JSON parse failed:', jsonError, text);
+      throw new Error('Invalid JSON response from server');
+    }
+    
+    if (!Array.isArray(menuData) || menuData.length === 0) {
+      throw new Error('Empty menu received');
+    }
+    
+    menu = menuData;
+    displayCategories();
+    displayMenu();
+    
+  } catch (error) {
+    console.error('Menu load failed:', error);
+    
+    // Show offline/sample menu
+    menu = [
+      {id:1, name:'Paneer Tikka', category:'Starter', full_price:250, image:'https://via.placeholder.com/300x200/00FF00?text=Paneer+Tikka'},
+      {id:2, name:'Dal Makhani', category:'Main Course', full_price:200, image:'https://via.placeholder.com/300x200/FF9900?text=Dal+Makhani'},
+      {id:3, name:'Masala Dosa', category:'South Indian', full_price:180, image:'https://via.placeholder.com/300x200/FF0000?text=Masala+Dosa'},
+      {id:4, name:'Mango Lassi', category:'Beverage', full_price:80, image:'https://via.placeholder.com/300x200/FFD700?text=Mango+Lassi'}
+    ];
+    displayCategories();
+    displayMenu();
+    
+    // Show warning
+    grid.insertAdjacentHTML('afterend', 
+      '<div style="padding:1rem;background:#fff3cd;border-radius:8px;margin:1rem;text-align:center;font-weight:600;color:#856404">⚠️ Offline Mode - Showing sample menu. Full menu loads when online.</div>'
+    );
+  }
+}
+
     
     function displayCategories() {
       const cats = ['All', ...new Set(menu.map(item => item[2]))];
