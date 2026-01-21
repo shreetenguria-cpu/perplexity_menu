@@ -115,12 +115,18 @@ async function loadMenu(){
     );
 
     const json = await res.json();
-    console.log("RAW API RESPONSE:", json);
+
+    // 👇 MAKE DATA GLOBAL FOR DEBUG
+    window.__MENU_RAW__ = json;
 
     const rows = Array.isArray(json) ? json : json.data;
+
+    window.__MENU_ROWS__ = rows;
+
+    console.log("RAW RESPONSE:", json);
     console.table(rows);
 
-    // TEMP: stop here
+    // stop rendering temporarily
     menu = [];
     renderCategories();
     renderMenu();
@@ -129,7 +135,6 @@ async function loadMenu(){
     console.error("API FAILED", e);
   }
 }
-
 
 /* ---------- UI ---------- */
 function renderCategories(){
