@@ -39,7 +39,7 @@ let cachedKOTs = JSON.parse(localStorage.getItem('localKOTs') || '[]');
 
 async function loadKOTs() {
   try {
-    const res = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=kot_status`);
+    const res = await fetch(`https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=kot_status`);
     const onlineKOTs = await res.json();
     
     // Merge online + local orders
@@ -93,7 +93,7 @@ async function completeKOT(kotId, index) {
     localStorage.setItem('localKOTs', JSON.stringify(cachedKOTs));
   } else {
     // Online order - call API
-    await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+    await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
       method: 'POST',
       body: JSON.stringify({action: 'completeKOT', kot: kotId})
     });
