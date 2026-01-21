@@ -39,6 +39,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .loader.show{display:flex}
 .spinner{width:50px;height:50px;border:4px solid #eee;border-top:4px solid #ff6b35;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Portion Sheet */
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.portion-card{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.9rem;border-radius:12px;border:1.5px solid #ddd;cursor:pointer
+}
+.portion-card.active{
+  border-color:#ff6b35;background:#fff4ee
+}
 </style>
 </head>
 
@@ -62,84 +72,76 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="loader" id="loader"><div class="spinner"></div></div>
 
+<!-- Portion Selector -->
+<div id="portionSheet" style="
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  display:none;align-items:flex-end;z-index:2000">
+  <div style="
+    background:#fff;width:100%;
+    border-radius:20px 20px 0 0;
+    padding:1rem;animation:slideUp .25s ease">
+    <div style="display:flex;gap:1rem">
+      <img id="psImage" style="width:72px;height:72px;border-radius:12px;object-fit:cover">
+      <div>
+        <div id="psName" style="font-weight:700;font-size:1.1rem"></div>
+        <div style="font-size:.85rem;color:#777">Choose portion</div>
+      </div>
+    </div>
+
+    <div id="portionOptions" style="margin-top:1rem;display:grid;gap:.7rem"></div>
+
+    <button onclick="confirmPortion()" style="
+      margin-top:1rem;width:100%;
+      padding:.9rem;background:#28a745;
+      color:#fff;border:none;border-radius:12px;
+      font-weight:700;font-size:1rem">
+      ADD TO CART
+    </button>
+  </div>
+</div>
+
 <script>
-/* ---------------- CONFIG ---------------- */
-const BRAND_CONFIG = {
-  cafe: {
-    name: "☕ Shreeji Cafe",
-    color: "#ff6b35",
-    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=cafe"
-  },
-  restaurant: {
-    name: "🍽️ Shreeji Restaurant",
-    color: "#c0392b",
-    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=restaurant"
-  },
-  pizzaghar: {
-    name: "🍕 PizzaGhar",
-    color: "#27ae60",
-    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=pizzaghar"
-  }
+/* ---------- CONFIG ---------- */
+const BRAND_CONFIG={
+  cafe:{name:"☕ Shreeji Cafe"},
+  restaurant:{name:"🍽️ Shreeji Restaurant"},
+  pizzaghar:{name:"🍕 PizzaGhar"}
 };
 
-/* ---------------- STATE ---------------- */
-const params = new URLSearchParams(location.search);
-const brandKey = params.get("brand") || "restaurant";
-const table = params.get("table") || "NA";
-const BRAND = BRAND_CONFIG[brandKey];
+const params=new URLSearchParams(location.search);
+const brandKey=params.get("brand")||"restaurant";
+const table=params.get("table")||"NA";
 
-let menu = [];
-let cart = JSON.parse(localStorage.getItem(`cart_${brandKey}_${table}`) || "[]");
-let currentCategory = "All";
+document.getElementById("brandLogo").textContent=BRAND_CONFIG[brandKey].name;
 
-/* ---------------- INIT ---------------- */
-document.getElementById("brandLogo").textContent = BRAND.name;
-document.documentElement.style.setProperty("--brand", BRAND.color);
+/* ---------- STATE ---------- */
+let menu=[];
+let cart=JSON.parse(localStorage.getItem(`cart_${brandKey}_${table}`)||"[]");
+let currentCategory="All";
+let selectedItem=null;
+let selectedPortion="full";
 
-loadMenu();
-
-/* ---------------- MENU ---------------- */
+/* ---------- MENU ---------- */
 async function loadMenu(){
   try{
-    const res = await fetch(BRAND.menuURL,{cache:"no-cache"});
-    const data = await res.json();
-    menu = normalizeMenu(data);
+    const res=await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu");
+    const data=await res.json();
+    menu=normalizeMenu(data);
   }catch{
-    menu = normalizeMenu([
-      {id:1,name:"Sample Item",category:"General",price:100,image:"https://via.placeholder.com/300"}
-    ]);
+    menu=normalizeMenu([{id:1,name:"Sample Item",category:"General",fullPrice:120,halfPrice:70,image:"https://via.placeholder.com/300"}]);
   }
   renderCategories();
   renderMenu();
 }
 
-function normalizeMenu(data) {
-  return data.map(item => {
-
-    // Google Sheet ARRAY format
-    if (Array.isArray(item)) {
-      return {
-        id: item[0],
-        name: item[1],
-        category: item[2],
-        fullPrice: Number(item[3]) || 0,
-        halfPrice: Number(item[4]) || 0,
-        image: item[5] || "https://via.placeholder.com/300"
-      };
-    }
-
-    // OBJECT format (offline / fallback)
-    return {
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      fullPrice: Number(item.fullPrice || item.full_price || 0),
-      halfPrice: Number(item.halfPrice || item.half_price || 0),
-      image: item.image || "https://via.placeholder.com/300"
-    };
-  });
+function normalizeMenu(data){
+  return data.map(i=>Array.isArray(i)?{
+    id:i[0],name:i[1],category:i[2],
+    fullPrice:Number(i[3])||0,
+    halfPrice:Number(i[4])||0,
+    image:i[5]||"https://via.placeholder.com/300"
+  }:i);
 }
-
 
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
@@ -156,61 +158,71 @@ function setCat(cat,el){
 }
 
 function renderMenu(){
-  menu.innerHTML="";
-  document.getElementById("menu").innerHTML=
-    menu.filter(i=>currentCategory==="All"||i.category===currentCategory)
+  menuEl.innerHTML=menu
+    .filter(i=>currentCategory==="All"||i.category===currentCategory)
     .map(i=>`
       <div class="item-card">
         <div class="item-image"><img src="${i.image}"></div>
         <div class="item-name">${i.name}</div>
-       <div class="item-price">
-  ${i.halfPrice > 0 ? `<small>Half ₹${i.halfPrice}</small><br>` : ``}
-  <b>Full ₹${i.fullPrice}</b>
-</div>
-
-        <button class="add-btn" onclick="add(${i.id})">ADD</button>
+        <div class="item-price">
+          ${i.halfPrice>0?`<small>Half ₹${i.halfPrice}</small><br>`:""}
+          <b>Full ₹${i.fullPrice}</b>
+        </div>
+        <button class="add-btn" onclick="openPortionSelector(${i.id})">ADD</button>
       </div>
     `).join("");
 }
 
-/* ---------------- CART ---------------- */
-function add(id, portion) {
-  const item = menu.find(i => i.id === id);
-  const price = portion === "half" ? item.halfPrice : item.fullPrice;
+/* ---------- PORTION SELECTOR ---------- */
+function openPortionSelector(id){
+  selectedItem=menu.find(i=>i.id===id);
+  selectedPortion="full";
+  psImage.src=selectedItem.image;
+  psName.textContent=selectedItem.name;
 
-  const cartKey = `${id}_${portion}`;
-  const existing = cart.find(i => i.key === cartKey);
+  portionOptions.innerHTML=`
+    ${selectedItem.halfPrice>0?`
+    <div class="portion-card" onclick="selectPortion('half',this)">
+      <div>Half Portion</div><b>₹${selectedItem.halfPrice}</b>
+    </div>`:""}
+    <div class="portion-card active" onclick="selectPortion('full',this)">
+      <div>Full Portion</div><b>₹${selectedItem.fullPrice}</b>
+    </div>`;
+  portionSheet.style.display="flex";
+}
 
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({
-      key: cartKey,
-      id,
-      name: `${item.name} (${portion.toUpperCase()})`,
-      portion,
-      price,
-      qty: 1
-    });
-  }
+function selectPortion(p,el){
+  selectedPortion=p;
+  document.querySelectorAll(".portion-card").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function confirmPortion(){
+  addToCart(selectedItem,selectedPortion);
+  portionSheet.style.display="none";
+}
+
+portionSheet.onclick=e=>{
+  if(e.target.id==="portionSheet")portionSheet.style.display="none";
+};
+
+/* ---------- CART ---------- */
+function addToCart(item,portion){
+  const price=portion==="half"?item.halfPrice:item.fullPrice;
+  const key=item.id+"_"+portion;
+  const found=cart.find(i=>i.key===key);
+  found?found.qty++:cart.push({key,name:`${item.name} (${portion.toUpperCase()})`,price,qty:1});
   updateCart();
 }
 
-
 function updateCart(){
-  const count=cart.reduce((a,b)=>a+b.qty,0);
-  const total=cart.reduce((a,b)=>a+b.qty*b.price,0);
-  countEl.textContent=count;
-  totalEl.textContent="₹"+total;
-  cartBar.classList.toggle("show",count>0);
+  count.textContent=cart.reduce((a,b)=>a+b.qty,0);
+  total.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
+  cartBar.classList.toggle("show",cart.length>0);
   localStorage.setItem(`cart_${brandKey}_${table}`,JSON.stringify(cart));
 }
 
-const countEl=document.getElementById("count");
-const totalEl=document.getElementById("total");
-const cartBar=document.getElementById("cartBar");
-
-/* ---------------- CHECKOUT ---------------- */
+/* ---------- CHECKOUT ---------- */
 async function checkout(){
   if(!cart.length)return;
   loader.classList.add("show");
@@ -224,11 +236,15 @@ async function checkout(){
     cart=[];
     updateCart();
   }catch{
-    alert("Offline: Order saved");
+    alert("Offline: order saved");
   }finally{
     loader.classList.remove("show");
   }
 }
+
+/* ---------- INIT ---------- */
+const menuEl=document.getElementById("menu");
+loadMenu();
 </script>
 
 </body>
