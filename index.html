@@ -351,8 +351,18 @@ loadMenu();
 </script>
 
   
+  <!-- Cart Sheet -->
+<div id="cartSheet" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:flex-end;
+  z-index:3000;
+">
   <div style="
-    background:#fff;width:100%;
+    background:#fff;
+    width:100%;
     border-radius:20px 20px 0 0;
     max-height:70vh;
     overflow:auto;
@@ -371,10 +381,15 @@ loadMenu();
         <span id="cartTotal">₹0</span>
       </div>
       <button onclick="checkout()" style="
-        margin-top:.8rem;width:100%;
-        padding:.9rem;background:#28a745;
-        color:#fff;border:none;border-radius:12px;
-        font-weight:700;font-size:1rem
+        margin-top:.8rem;
+        width:100%;
+        padding:.9rem;
+        background:#28a745;
+        color:#fff;
+        border:none;
+        border-radius:12px;
+        font-weight:700;
+        font-size:1rem
       ">Send to Kitchen</button>
     </div>
   </div>
