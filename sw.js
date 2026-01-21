@@ -72,7 +72,7 @@ async function syncQueue() {
   for (let i = 0; i < queue.length; i++) {
     try {
       const item = queue[i];
-      const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
         method: 'POST',
         body: JSON.stringify(item.data)
       });
