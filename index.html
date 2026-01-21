@@ -113,11 +113,33 @@ async function loadMenu(){
   renderMenu();
 }
 
-function normalizeMenu(data){
-  return data.map(i=>Array.isArray(i)?{
-    id:i[0],name:i[1],category:i[2],price:+i[3],image:i[5]
-  }:i);
+function normalizeMenu(data) {
+  return data.map(item => {
+
+    // Google Sheet ARRAY format
+    if (Array.isArray(item)) {
+      return {
+        id: item[0],
+        name: item[1],
+        category: item[2],
+        fullPrice: Number(item[3]) || 0,
+        halfPrice: Number(item[4]) || 0,
+        image: item[5] || "https://via.placeholder.com/300"
+      };
+    }
+
+    // OBJECT format (offline / fallback)
+    return {
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      fullPrice: Number(item.fullPrice || item.full_price || 0),
+      halfPrice: Number(item.halfPrice || item.half_price || 0),
+      image: item.image || "https://via.placeholder.com/300"
+    };
+  });
 }
+
 
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
@@ -141,19 +163,39 @@ function renderMenu(){
       <div class="item-card">
         <div class="item-image"><img src="${i.image}"></div>
         <div class="item-name">${i.name}</div>
-        <div class="item-price">₹${i.price}</div>
+       <div class="item-price">
+  ${i.halfPrice > 0 ? `<small>Half ₹${i.halfPrice}</small><br>` : ``}
+  <b>Full ₹${i.fullPrice}</b>
+</div>
+
         <button class="add-btn" onclick="add(${i.id})">ADD</button>
       </div>
     `).join("");
 }
 
 /* ---------------- CART ---------------- */
-function add(id){
-  const item=menu.find(i=>i.id===id);
-  const c=cart.find(i=>i.id===id);
-  c?c.qty++:cart.push({...item,qty:1});
+function add(id, portion) {
+  const item = menu.find(i => i.id === id);
+  const price = portion === "half" ? item.halfPrice : item.fullPrice;
+
+  const cartKey = `${id}_${portion}`;
+  const existing = cart.find(i => i.key === cartKey);
+
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({
+      key: cartKey,
+      id,
+      name: `${item.name} (${portion.toUpperCase()})`,
+      portion,
+      price,
+      qty: 1
+    });
+  }
   updateCart();
 }
+
 
 function updateCart(){
   const count=cart.reduce((a,b)=>a+b.qty,0);
