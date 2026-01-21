@@ -7,37 +7,29 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8f9fa}
+body{font-family:system-ui;background:#f8f9fa}
 
-/* Header */
-.header{position:sticky;top:0;background:#fff;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:10}
+.header{position:sticky;top:0;background:#fff;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .logo{font-size:1.5rem;font-weight:700}
 .search{width:100%;padding:.7rem;border-radius:25px;border:1px solid #ddd;margin:.8rem 0}
 
-/* Categories */
 .categories{display:flex;gap:.5rem;overflow-x:auto}
-.category{padding:.4rem 1rem;border-radius:20px;background:#eee;cursor:pointer;white-space:nowrap}
+.category{padding:.4rem 1rem;border-radius:20px;background:#eee;cursor:pointer}
 .category.active{background:#ff6b35;color:#fff}
 
-/* Menu */
 .menu-grid{padding:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
 .item-card{background:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
-.item-image{height:120px;background:#ddd}
+.item-image{height:120px;background:#eee}
 .item-image img{width:100%;height:100%;object-fit:cover}
 .item-name{padding:.6rem;font-weight:600}
 .item-price{padding:0 .6rem .6rem;color:#ff6b35;font-weight:700}
 .add-btn{width:100%;padding:.6rem;border:none;background:#ff6b35;color:#fff;font-weight:600}
 
-/* Cart bar */
-.cart-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:1rem;box-shadow:0 -4px 10px rgba(0,0,0,.1);display:none}
+.cart-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:1rem;display:none;box-shadow:0 -4px 10px rgba(0,0,0,.1)}
 .cart-bar.show{display:block}
-.checkout-btn{background:#28a745;color:#fff;padding:.8rem;border-radius:10px;text-align:center;font-weight:600}
 
-/* Sheet animation */
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-
-/* Portion selector */
-.portion-card{display:flex;justify-content:space-between;align-items:center;padding:.9rem;border-radius:12px;border:1.5px solid #ddd;cursor:pointer}
+.portion-card{display:flex;justify-content:space-between;padding:.8rem;border:1px solid #ddd;border-radius:10px;cursor:pointer}
 .portion-card.active{border-color:#ff6b35;background:#fff4ee}
 </style>
 </head>
@@ -57,90 +49,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <span>Cart <b id="count">0</b></span>
     <span id="total">₹0</span>
   </div>
-  <div class="checkout-btn" onclick="checkout()">Send to Kitchen</div>
 </div>
 
-<!-- Portion Selector -->
-<div id="portionSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:2000">
-  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:1rem;animation:slideUp .25s">
-    <div style="font-weight:700" id="psName"></div>
-    <div id="portionOptions" style="margin-top:1rem;display:grid;gap:.7rem"></div>
-    <button onclick="confirmPortion()" style="margin-top:1rem;width:100%;padding:.9rem;background:#28a745;color:#fff;border:none;border-radius:12px;font-weight:700">
-      ADD TO CART
-    </button>
+<!-- Portion Sheet -->
+<div id="portionSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end">
+  <div style="background:#fff;width:100%;padding:1rem;border-radius:20px 20px 0 0;animation:slideUp .25s">
+    <div id="psName" style="font-weight:700"></div>
+    <div id="portionOptions" style="margin-top:1rem;display:grid;gap:.6rem"></div>
+    <button onclick="confirmPortion()" style="margin-top:1rem;width:100%;padding:.8rem;background:#28a745;color:#fff;border:none;border-radius:12px;font-weight:700">ADD</button>
   </div>
 </div>
 
 <!-- Cart Sheet -->
-<div id="cartSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:3000">
-  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:1rem;max-height:70vh;overflow:auto;animation:slideUp .25s">
-    <div style="font-weight:700;margin-bottom:.5rem">Your Cart</div>
+<div id="cartSheet" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end">
+  <div style="background:#fff;width:100%;padding:1rem;border-radius:20px 20px 0 0;animation:slideUp .25s">
+    <div style="font-weight:700">Your Cart</div>
     <div id="cartItems"></div>
-    <div style="margin-top:1rem;border-top:1px solid #eee;padding-top:1rem">
-      <div style="display:flex;justify-content:space-between;font-weight:700">
-        <span>Total</span>
-        <span id="cartTotal">₹0</span>
-      </div>
-      <button onclick="checkout()" style="margin-top:.8rem;width:100%;padding:.9rem;background:#28a745;color:#fff;border:none;border-radius:12px;font-weight:700">
-        Send to Kitchen
-      </button>
-    </div>
+    <div style="margin-top:1rem;font-weight:700">Total: <span id="cartTotal">₹0</span></div>
   </div>
 </div>
 
 <script>
-/* ---------- STATE ---------- */
-let menu=[], cart=[];
-let selectedItem=null, selectedPortion="full";
+let menu=[], cart=[], selectedItem=null, selectedPortion="full";
 
-/* ---------- DOM ---------- */
-const menuEl = document.getElementById("menu");
-const categoriesEl = document.getElementById("categories");
-const cartBar = document.getElementById("cartBar");
-const countEl = document.getElementById("count");
-const totalEl = document.getElementById("total");
-const cartSheet = document.getElementById("cartSheet");
-const cartItems = document.getElementById("cartItems");
-const cartTotal = document.getElementById("cartTotal");
-const portionSheet = document.getElementById("portionSheet");
-const psName = document.getElementById("psName");
-const portionOptions = document.getElementById("portionOptions");
+const menuEl=document.getElementById("menu");
+const categoriesEl=document.getElementById("categories");
+const cartBar=document.getElementById("cartBar");
+const countEl=document.getElementById("count");
+const totalEl=document.getElementById("total");
+const portionSheet=document.getElementById("portionSheet");
+const psName=document.getElementById("psName");
+const portionOptions=document.getElementById("portionOptions");
+const cartSheet=document.getElementById("cartSheet");
+const cartItems=document.getElementById("cartItems");
+const cartTotal=document.getElementById("cartTotal");
 
-/* ---------- LOAD MENU ---------- */
 async function loadMenu(){
-  try{
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu",
-      { cache: "no-store" }
-    );
-
-    const json = await res.json();
-
-    // 👇 MAKE DATA GLOBAL FOR DEBUG
-    window.__MENU_RAW__ = json;
-
-    const rows = Array.isArray(json) ? json : json.data;
-
-    window.__MENU_ROWS__ = rows;
-
-    console.log("RAW RESPONSE:", json);
-    console.table(rows);
-
-    // stop rendering temporarily
-    menu = [];
-    renderCategories();
-    renderMenu();
-
-  }catch(e){
-    console.error("API FAILED", e);
-  }
+  const res = await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu",{cache:"no-store"});
+  menu = await res.json();
+  renderCategories();
+  renderMenu();
 }
 
-/* ---------- UI ---------- */
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
-  categoriesEl.innerHTML=cats.map(c=>`<div class="category" onclick="filterCat('${c}',this)">${c}</div>`).join("");
-  categoriesEl.firstChild.classList.add("active");
+  categoriesEl.innerHTML=cats.map((c,i)=>`<div class="category ${i==0?"active":""}" onclick="filterCat('${c}',this)">${c}</div>`).join("");
 }
 
 function filterCat(cat,el){
@@ -152,25 +105,24 @@ function filterCat(cat,el){
 function renderMenu(cat="All"){
   menuEl.innerHTML=menu.filter(i=>cat==="All"||i.category===cat).map(i=>`
     <div class="item-card">
-      <div class="item-image"><img src="${i.image}"></div>
+      <div class="item-image"><img src="${i.image||'https://via.placeholder.com/300'}"></div>
       <div class="item-name">${i.name}</div>
       <div class="item-price">
-        ${i.halfPrice?`<small>Half ₹${i.halfPrice}</small><br>`:""}
-        Full ₹${i.fullPrice}
+        ${i.half_price>0?`<small>Half ₹${i.half_price}</small><br>`:""}
+        Full ₹${i.full_price}
       </div>
       <button class="add-btn" onclick="openPortion(${i.id})">ADD</button>
     </div>`).join("");
 }
 
-/* ---------- PORTION ---------- */
 function openPortion(id){
-  const item=menu.find(i=>i.id===id);
-  if(!item.halfPrice){ add(item,"full"); return; }
+  const item=menu.find(i=>i.id==id);
+  if(!item.half_price){ add(item,"full"); return; }
   selectedItem=item; selectedPortion="full";
   psName.textContent=item.name;
   portionOptions.innerHTML=`
-    <div class="portion-card" onclick="selectPortion('half',this)">Half ₹${item.halfPrice}</div>
-    <div class="portion-card active" onclick="selectPortion('full',this)">Full ₹${item.fullPrice}</div>`;
+    <div class="portion-card" onclick="selectPortion('half',this)">Half ₹${item.half_price}</div>
+    <div class="portion-card active" onclick="selectPortion('full',this)">Full ₹${item.full_price}</div>`;
   portionSheet.style.display="flex";
 }
 
@@ -185,53 +137,29 @@ function confirmPortion(){
   portionSheet.style.display="none";
 }
 
-/* ---------- CART ---------- */
 function add(item,portion){
-  const price=portion==="half"?item.halfPrice:item.fullPrice;
+  const price=portion==="half"?item.half_price:item.full_price;
   const key=item.id+"_"+portion;
   const f=cart.find(i=>i.key===key);
-  f?f.qty++:cart.push({key,name:`${item.name} (${portion.toUpperCase()})`,price,qty:1});
+  f?f.qty++:cart.push({key,name:item.name+" ("+portion+")",price,qty:1});
   updateCart();
 }
 
 function updateCart(){
-  const total=cart.reduce((a,b)=>a+b.qty*b.price,0);
   countEl.textContent=cart.reduce((a,b)=>a+b.qty,0);
-  totalEl.textContent="₹"+total;
+  totalEl.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
   cartBar.classList.toggle("show",cart.length>0);
 }
 
 function openCart(){
-  cartItems.innerHTML=cart.map((i,idx)=>`
-    <div style="display:flex;justify-content:space-between;margin-bottom:.6rem">
-      <div>${i.name}<br><small>₹${i.price} × ${i.qty}</small></div>
-      <div>
-        <button onclick="chg(${idx},-1)">−</button>
-        ${i.qty}
-        <button onclick="chg(${idx},1)">+</button>
-      </div>
-    </div>`).join("");
+  cartItems.innerHTML=cart.map(i=>`<div>${i.name} - ₹${i.price} × ${i.qty}</div>`).join("");
   cartTotal.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
   cartSheet.style.display="flex";
-}
-
-function chg(i,d){
-  cart[i].qty+=d;
-  if(cart[i].qty<=0)cart.splice(i,1);
-  updateCart();
-  openCart();
-}
-
-/* ---------- CHECKOUT ---------- */
-function checkout(){
-  alert("Order sent to kitchen");
-  cart=[];updateCart();cartSheet.style.display="none";
 }
 
 cartSheet.onclick=e=>{if(e.target===cartSheet)cartSheet.style.display="none";}
 portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
 
-/* ---------- START ---------- */
 loadMenu();
 </script>
 
