@@ -181,10 +181,6 @@ function openCart() {
   cartSheet.style.display = "flex";
 }
 
-cartSheet.onclick = e => {
-  if (e.target.id === "cartSheet") cartSheet.style.display = "none";
-};
-
 function renderCartItems() {
   if (!cart.length) {
     cartItems.innerHTML = "<p style='text-align:center;color:#777'>Cart is empty</p>";
@@ -342,20 +338,19 @@ async function checkout(){
 
 /* ---------- INIT ---------- */
 const menuEl=document.getElementById("menu");
-  cartSheet = document.getElementById("cartSheet");
+cartSheet = document.getElementById("cartSheet");
 cartItems = document.getElementById("cartItems");
 cartTotal = document.getElementById("cartTotal");
+cartSheet.onclick = e => {
+  if (e.target.id === "cartSheet") {
+    cartSheet.style.display = "none";
+  }
+};
 
 loadMenu();
 </script>
 
-  <!-- Cart Sheet -->
-<div id="cartSheet" style="
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;align-items:flex-end;
-  z-index:3000;
-">
+  
   <div style="
     background:#fff;width:100%;
     border-radius:20px 20px 0 0;
