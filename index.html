@@ -62,7 +62,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="menu-grid" id="menu"></div>
 
-<div class="cart-bar" id="cartBar">
+<div class="cart-bar" id="cartBar" onclick="opencart()" >
   <div style="display:flex;justify-content:space-between">
     <span>Cart <b id="count">0</b></span>
     <span id="total">₹0</span>
@@ -174,6 +174,51 @@ function normalizeMenu(data) {
     };
   });
 }
+function openCart() {
+  renderCartItems();
+  cartSheet.style.display = "flex";
+}
+
+cartSheet.onclick = e => {
+  if (e.target.id === "cartSheet") cartSheet.style.display = "none";
+};
+
+function renderCartItems() {
+  if (!cart.length) {
+    cartItems.innerHTML = "<p style='text-align:center;color:#777'>Cart is empty</p>";
+    cartTotal.textContent = "₹0";
+    return;
+  }
+
+  cartItems.innerHTML = cart.map((item, i) => `
+    <div style="
+      display:flex;justify-content:space-between;
+      align-items:center;margin-bottom:.8rem">
+      <div>
+        <div style="font-weight:600">${item.name}</div>
+        <div style="font-size:.85rem;color:#777">
+          ₹${item.price} × ${item.qty}
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <button onclick="changeQty(${i},-1)" style="width:28px;height:28px">−</button>
+        <b>${item.qty}</b>
+        <button onclick="changeQty(${i},1)" style="width:28px;height:28px">+</button>
+      </div>
+    </div>
+  `).join("");
+
+  cartTotal.textContent =
+    "₹" + cart.reduce((a, b) => a + b.qty * b.price, 0);
+}
+
+function changeQty(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) cart.splice(index, 1);
+  updateCart();
+  renderCartItems();
+}
 
 
 function renderCategories(){
@@ -268,6 +313,9 @@ function updateCart(){
   total.textContent="₹"+cart.reduce((a,b)=>a+b.qty*b.price,0);
   cartBar.classList.toggle("show",cart.length>0);
   localStorage.setItem(`cart_${brandKey}_${table}`,JSON.stringify(cart));
+
+  if (cartSheet.style.display === "flex") renderCartItems();
+
 }
 
 /* ---------- CHECKOUT ---------- */
@@ -294,6 +342,42 @@ async function checkout(){
 const menuEl=document.getElementById("menu");
 loadMenu();
 </script>
+
+  <!-- Cart Sheet -->
+<div id="cartSheet" style="
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;align-items:flex-end;
+  z-index:3000;
+">
+  <div style="
+    background:#fff;width:100%;
+    border-radius:20px 20px 0 0;
+    max-height:70vh;
+    overflow:auto;
+    padding:1rem;
+    animation:slideUp .25s ease;
+  ">
+    <div style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem">
+      Your Cart
+    </div>
+
+    <div id="cartItems"></div>
+
+    <div style="margin-top:1rem;border-top:1px solid #eee;padding-top:1rem">
+      <div style="display:flex;justify-content:space-between;font-weight:700">
+        <span>Total</span>
+        <span id="cartTotal">₹0</span>
+      </div>
+      <button onclick="checkout()" style="
+        margin-top:.8rem;width:100%;
+        padding:.9rem;background:#28a745;
+        color:#fff;border:none;border-radius:12px;
+        font-weight:700;font-size:1rem
+      ">Send to Kitchen</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
