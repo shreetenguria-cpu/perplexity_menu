@@ -134,14 +134,47 @@ async function loadMenu(){
   renderMenu();
 }
 
-function normalizeMenu(data){
-  return data.map(i=>Array.isArray(i)?{
-    id:i[0],name:i[1],category:i[2],
-    fullPrice:Number(i[3])||0,
-    halfPrice:Number(i[4])||0,
-    image:i[5]||"https://via.placeholder.com/300"
-  }:i);
+function normalizeMenu(data) {
+  return data.map(row => {
+
+    // Google Sheet row (array)
+    if (Array.isArray(row)) {
+      const id = row[0];
+      const name = row[1];
+      const category = row[2];
+
+      // SAFE price detection
+      const fullPrice = Number(row[3]) || 0;
+      const halfPrice = Number(row[4]) || 0;
+
+      // Image may be index 4 or 5 depending on sheet
+      const image =
+        row[5] ||
+        row[4]?.startsWith("http") && row[4] ||
+        "https://via.placeholder.com/300";
+
+      return {
+        id,
+        name,
+        category,
+        fullPrice,
+        halfPrice,
+        image
+      };
+    }
+
+    // Object fallback
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      fullPrice: Number(row.fullPrice || row.full_price || row.price || 0),
+      halfPrice: Number(row.halfPrice || row.half_price || 0),
+      image: row.image || "https://via.placeholder.com/300"
+    };
+  });
 }
+
 
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
