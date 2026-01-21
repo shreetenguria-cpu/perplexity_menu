@@ -124,17 +124,32 @@ let selectedPortion="full";
   let cartSheet, cartItems, cartTotal;
 
 /* ---------- MENU ---------- */
-async function loadMenu(){
-  try{
-    const res=await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu");
-    const data=await res.json();
-    menu=normalizeMenu(data);
-  }catch{
-    menu=normalizeMenu([{id:1,name:"Sample Item",category:"General",fullPrice:120,halfPrice:70,image:"https://via.placeholder.com/300"}]);
+async function loadMenu() {
+  try {
+    const res = await fetch(
+      "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu"
+    );
+    const json = await res.json();
+
+    // ✅ FIX: extract actual array safely
+    const rows = Array.isArray(json) ? json : json.data;
+
+    if (!Array.isArray(rows)) throw new Error("Menu data invalid");
+
+    menu = normalizeMenu(rows);
+  } catch (e) {
+    console.error("Menu load failed", e);
+
+    // fallback menu
+    menu = normalizeMenu([
+      [1, "Sample Item", "General", 120, 70, "https://via.placeholder.com/300"]
+    ]);
   }
+
   renderCategories();
   renderMenu();
 }
+
 
 function normalizeMenu(data) {
   return data.map(row => {
