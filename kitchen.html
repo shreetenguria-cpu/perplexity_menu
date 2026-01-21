@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Display - Shreeji Cafe</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a1a; color: white; padding: 2rem; }
+    .kot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; }
+    .kot-card { background: #2a2a2a; padding: 2rem; border-radius: 12px; border-left: 8px solid #ff6b35; }
+    .kot-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+    .kot-num { font-size: 2rem; font-weight: bold; color: #ff6b35; }
+    .table-num { font-size: 1.5rem; }
+    .items { margin: 1rem 0; }
+    .item { padding: 0.5rem 0; border-bottom: 1px solid #444; }
+    .timer { font-size: 3rem; font-weight: bold; text-align: center; margin: 1rem 0; }
+    .green { color: #28a745; } .yellow { color: #ffc107; } .red { color: #dc3545; }
+    .complete-btn { width: 100%; padding: 1rem; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; }
+    @media (max-width: 768px) { .kot-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; margin-bottom: 2rem; font-size: 3rem;">🍳 KITCHEN DISPLAY</h1>
+  <div class="kot-grid" id="kot-grid"></div>
+  
+  <script>
+    async function loadKOTs() {
+      try {
+        const res = await fetch(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Display - Shreeji Cafe</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a1a; color: white; padding: 2rem; }
+    .kot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; }
+    .kot-card { background: #2a2a2a; padding: 2rem; border-radius: 12px; border-left: 8px solid #ff6b35; }
+    .kot-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+    .kot-num { font-size: 2rem; font-weight: bold; color: #ff6b35; }
+    .table-num { font-size: 1.5rem; }
+    .items { margin: 1rem 0; }
+    .item { padding: 0.5rem 0; border-bottom: 1px solid #444; }
+    .timer { font-size: 3rem; font-weight: bold; text-align: center; margin: 1rem 0; }
+    .green { color: #28a745; } .yellow { color: #ffc107; } .red { color: #dc3545; }
+    .complete-btn { width: 100%; padding: 1rem; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; }
+    @media (max-width: 768px) { .kot-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; margin-bottom: 2rem; font-size: 3rem;">🍳 KITCHEN DISPLAY</h1>
+  <div class="kot-grid" id="kot-grid"></div>
+  
+  <script>
+    async function loadKOTs() {
+      try {
+        const res = await fetch(`https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec`);
+        const kots = await res.json();
+        displayKOTs(kots.filter(kot => kot[4] !== 'Completed'));
+      } catch(e) { console.error(e); }
+    }
+    
+    function displayKOTs(kots) {
+      document.getElementById('kot-grid').innerHTML = kots.map(kot => {
+        const timeDiff = (new Date() - new Date(kot[3])) / 1000 / 60; // minutes
+        const colorClass = timeDiff < 8 ? 'green' : timeDiff < 12 ? 'yellow' : 'red';
+        const items = JSON.parse(kot[2]);
+        return `
+          <div class="kot-card">
+            <div class="kot-header">
+              <div class="kot-num">${kot[0]}</div>
+              <div class="table-num">Table ${kot[1]}</div>
+            </div>
+            <div class="items">
+              ${items.map(item => `<div class="item">${item.name} x${item.qty}</div>`).join('')}
+            </div>
+            <div class="timer ${colorClass}">${Math.floor(timeDiff)}m</div>
+            <button class="complete-btn" onclick="completeKOT('${kot[0]}')">✓ COMPLETE</button>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    async function completeKOT(kot) {
+      await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
+        method: 'POST',
+        body: JSON.stringify({action: 'completeKOT', kot})
+      });
+      loadKOTs();
+    }
+    
+    loadKOTs();
+    setInterval(loadKOTs, 5000); // Refresh every 5s
+  </script>
+</body>
+</html>
+`);
+        const kots = await res.json();
+        displayKOTs(kots.filter(kot => kot[4] !== 'Completed'));
+      } catch(e) { console.error(e); }
+    }
+    
+    function displayKOTs(kots) {
+      document.getElementById('kot-grid').innerHTML = kots.map(kot => {
+        const timeDiff = (new Date() - new Date(kot[3])) / 1000 / 60; // minutes
+        const colorClass = timeDiff < 8 ? 'green' : timeDiff < 12 ? 'yellow' : 'red';
+        const items = JSON.parse(kot[2]);
+        return `
+          <div class="kot-card">
+            <div class="kot-header">
+              <div class="kot-num">${kot[0]}</div>
+              <div class="table-num">Table ${kot[1]}</div>
+            </div>
+            <div class="items">
+              ${items.map(item => `<div class="item">${item.name} x${item.qty}</div>`).join('')}
+            </div>
+            <div class="timer ${colorClass}">${Math.floor(timeDiff)}m</div>
+            <button class="complete-btn" onclick="completeKOT('${kot[0]}')">✓ COMPLETE</button>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    async function completeKOT(kot) {
+      await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
+        method: 'POST',
+        body: JSON.stringify({action: 'completeKOT', kot})
+      });
+      loadKOTs();
+    }
+    
+    loadKOTs();
+    setInterval(loadKOTs, 5000); // Refresh every 5s
+  </script>
+</body>
+</html>
