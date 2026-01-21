@@ -207,22 +207,37 @@ function renderMenu(){
 }
 
 /* ---------- PORTION SELECTOR ---------- */
-function openPortionSelector(id){
-  selectedItem=menu.find(i=>i.id===id);
-  selectedPortion="full";
-  psImage.src=selectedItem.image;
-  psName.textContent=selectedItem.name;
+function openPortionSelector(id) {
+  const item = menu.find(i => i.id === id);
 
-  portionOptions.innerHTML=`
-    ${selectedItem.halfPrice>0?`
+  // ✅ AUTO-SKIP POPUP (FULL ONLY)
+  if (!item.halfPrice || item.halfPrice <= 0) {
+    addToCart(item, "full");
+    return;
+  }
+
+  // ⬇️ SHOW POPUP ONLY IF HALF EXISTS
+  selectedItem = item;
+  selectedPortion = "full";
+
+  psImage.src = item.image;
+  psName.textContent = item.name;
+
+  portionOptions.innerHTML = `
     <div class="portion-card" onclick="selectPortion('half',this)">
-      <div>Half Portion</div><b>₹${selectedItem.halfPrice}</b>
-    </div>`:""}
+      <div>Half Portion</div>
+      <b>₹${item.halfPrice}</b>
+    </div>
+
     <div class="portion-card active" onclick="selectPortion('full',this)">
-      <div>Full Portion</div><b>₹${selectedItem.fullPrice}</b>
-    </div>`;
-  portionSheet.style.display="flex";
+      <div>Full Portion</div>
+      <b>₹${item.fullPrice}</b>
+    </div>
+  `;
+
+  portionSheet.style.display = "flex";
 }
+
 
 function selectPortion(p,el){
   selectedPortion=p;
