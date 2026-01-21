@@ -134,14 +134,14 @@ console.table(rows);
     ];
   }
 
-  menu = rows.map(r=>({
-    id:r[0],
-    name:r[1],
-    category:r[2],
-    full_Price:+r[3]||0,
-    half_Price:+r[4]||0,
-    image:r[5]||"https://via.placeholder.com/300"
-  }));
+  menu = rows.map(r => ({
+  id:r[0],
+  name:r[1],
+  category:r[2],
+  fullPrice:+r[3]||0,
+  halfPrice:+r[4]||0,
+  image:r[5]||"https://via.placeholder.com/300"
+}));
 
   renderCategories();
   renderMenu();
