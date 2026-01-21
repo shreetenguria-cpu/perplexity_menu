@@ -62,7 +62,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="menu-grid" id="menu"></div>
 
-<div class="cart-bar" id="cartBar" onclick="opencart()" >
+<div class="cart-bar" id="cartBar" onclick="openCart()" >
   <div style="display:flex;justify-content:space-between">
     <span>Cart <b id="count">0</b></span>
     <span id="total">₹0</span>
@@ -120,6 +120,8 @@ let cart=JSON.parse(localStorage.getItem(`cart_${brandKey}_${table}`)||"[]");
 let currentCategory="All";
 let selectedItem=null;
 let selectedPortion="full";
+
+  let cartSheet, cartItems, cartTotal;
 
 /* ---------- MENU ---------- */
 async function loadMenu(){
@@ -340,6 +342,10 @@ async function checkout(){
 
 /* ---------- INIT ---------- */
 const menuEl=document.getElementById("menu");
+  cartSheet = document.getElementById("cartSheet");
+cartItems = document.getElementById("cartItems");
+cartTotal = document.getElementById("cartTotal");
+
 loadMenu();
 </script>
 
