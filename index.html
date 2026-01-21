@@ -1,400 +1,193 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shreeji Cafe - Menu</title>
-  <link rel="manifest" href="manifest.json">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; }
-    
-    /* Header */
-    .header { position: sticky; top: 0; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; padding: 1rem; }
-    .logo { font-size: 1.5rem; font-weight: 700; color: #ff6b35; }
-    .search { margin: 1rem 0; padding: 0.75rem; border: 1px solid #ddd; border-radius: 25px; width: 100%; }
-    
-    /* Categories */
-    .categories { display: flex; overflow-x: auto; padding: 1rem; gap: 0.5rem; background: white; }
-    .category { padding: 0.5rem 1rem; background: #f0f0f0; border-radius: 20px; white-space: nowrap; cursor: pointer; }
-    .category.active { background: #ff6b35; color: white; }
-    
-    /* Menu Items */
-    .menu-grid { padding: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-    .item-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; }
-    .item-card:hover { transform: translateY(-4px); }
-    .item-image { height: 120px; background: #e0e0e0; position: relative; }
-    .item-image img { width: 100%; height: 100%; object-fit: cover; }
-    .veg-badge { position: absolute; top: 8px; left: 8px; background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; }
-    .item-name { padding: 0.75rem 1rem 0.5rem; font-weight: 600; }
-    .item-price { padding: 0 1rem 1rem; color: #ff6b35; font-weight: 700; font-size: 1.1rem; }
-    .add-btn { width: 100%; padding: 0.75rem; background: #ff6b35; color: white; border: none; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .add-btn:active { background: #e55a2b; }
-    
-    /* Cart */
-    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 1rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); display: none; }
-    .cart-bar.show { display: block; }
-    .cart-count { background: #ff6b35; color: white; border-radius: 50%; padding: 0.25rem 0.5rem; font-size: 0.8rem; }
-    .checkout-btn { background: #28a745; color: white; padding: 1rem; border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; }
-    
-    /* Cart Sheet */
-    .cart-sheet { position: fixed; bottom: 80px; left: 0; right: 0; background: white; transform: translateY(100%); transition: transform 0.3s ease; max-height: 400px; overflow-y: auto; border-radius: 20px 20px 0 0; }
-    .cart-sheet.open { transform: translateY(0); }
-    .cart-item { display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #eee; }
-    .qty-controls { display: flex; gap: 0.5rem; align-items: center; }
-    .qty-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 50%; cursor: pointer; }
-    
-    /* Loader */
-    .loader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .loader.show { display: flex; }
-    .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #ff6b35; border-radius: 50%; animation: spin 1s linear infinite; }
-    
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @media (max-width: 768px) { .menu-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shreeji Digital Menu</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8f9fa}
+
+/* Header */
+.header{position:sticky;top:0;background:#fff;z-index:100;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.logo{font-size:1.5rem;font-weight:700}
+.search{width:100%;padding:.7rem;border-radius:25px;border:1px solid #ddd;margin:.8rem 0}
+
+/* Categories */
+.categories{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0}
+.category{padding:.4rem 1rem;border-radius:20px;background:#eee;white-space:nowrap;cursor:pointer}
+.category.active{background:#ff6b35;color:#fff}
+
+/* Menu */
+.menu-grid{padding:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
+.item-card{background:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+.item-image{height:120px;background:#ddd}
+.item-image img{width:100%;height:100%;object-fit:cover}
+.item-name{padding:.6rem;font-weight:600}
+.item-price{padding:0 .6rem .6rem;color:#ff6b35;font-weight:700}
+.add-btn{width:100%;padding:.6rem;border:none;background:#ff6b35;color:#fff;font-weight:600}
+
+/* Cart */
+.cart-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:1rem;box-shadow:0 -4px 10px rgba(0,0,0,.1);display:none}
+.cart-bar.show{display:block}
+.checkout-btn{background:#28a745;color:#fff;padding:.8rem;text-align:center;border-radius:10px;font-weight:600}
+
+/* Loader */
+.loader{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
+.loader.show{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #eee;border-top:4px solid #ff6b35;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
+
 <body>
-  <div class="header">
-    <div class="logo">🍽️ Shreeji Cafe</div>
-    <input type="text" class="search" placeholder="Search dishes..." id="search">
-    <div class="categories" id="categories"></div>
+
+<div class="header">
+  <div class="logo" id="brandLogo"></div>
+  <input class="search" id="search" placeholder="Search items">
+  <div class="categories" id="categories"></div>
+</div>
+
+<div class="menu-grid" id="menu"></div>
+
+<div class="cart-bar" id="cartBar">
+  <div style="display:flex;justify-content:space-between">
+    <span>Cart <b id="count">0</b></span>
+    <span id="total">₹0</span>
   </div>
-  
-  <div class="menu-grid" id="menu-grid">
-    <!-- Items loaded here -->
-  </div>
-  
-  <div class="cart-bar" id="cart-bar">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span>Cart <span class="cart-count" id="cart-count">0</span></span>
-      <span id="subtotal">₹0</span>
-    </div>
-    <div class="checkout-btn" id="checkout-btn">Select Table & Send to Kitchen</div>
-  </div>
-  
-  <div class="cart-sheet" id="cart-sheet">
-    <div style="padding: 1rem; border-bottom: 1px solid #eee; font-weight: 600;">Your Cart</div>
-    <div id="cart-items"></div>
-  </div>
-  
-  <div class="loader" id="loader">
-    <div class="spinner"></div>
-  </div>
-  
-  <script>
-    let menu = [], cart = [], tableNum = '', currentCategory = 'All';
-    
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-    
-    // Replace your loadMenu function with this:
-async function loadMenu() {
-  const grid = document.getElementById('menu-grid');
-  grid.innerHTML = '<div class="shimmer" style="grid-column:1/-1;padding:2rem;text-align:center">Loading menu...</div>';
-  
-  try {
-    const res = await fetch(`https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu`, {
-      cache: 'no-cache'
+  <div class="checkout-btn" onclick="checkout()">Send to Kitchen</div>
+</div>
+
+<div class="loader" id="loader"><div class="spinner"></div></div>
+
+<script>
+/* ---------------- CONFIG ---------------- */
+const BRAND_CONFIG = {
+  cafe: {
+    name: "☕ Shreeji Cafe",
+    color: "#ff6b35",
+    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=cafe"
+  },
+  restaurant: {
+    name: "🍽️ Shreeji Restaurant",
+    color: "#c0392b",
+    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=restaurant"
+  },
+  pizzaghar: {
+    name: "🍕 PizzaGhar",
+    color: "#27ae60",
+    menuURL: "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu&brand=pizzaghar"
+  }
+};
+
+/* ---------------- STATE ---------------- */
+const params = new URLSearchParams(location.search);
+const brandKey = params.get("brand") || "restaurant";
+const table = params.get("table") || "NA";
+const BRAND = BRAND_CONFIG[brandKey];
+
+let menu = [];
+let cart = JSON.parse(localStorage.getItem(`cart_${brandKey}_${table}`) || "[]");
+let currentCategory = "All";
+
+/* ---------------- INIT ---------------- */
+document.getElementById("brandLogo").textContent = BRAND.name;
+document.documentElement.style.setProperty("--brand", BRAND.color);
+
+loadMenu();
+
+/* ---------------- MENU ---------------- */
+async function loadMenu(){
+  try{
+    const res = await fetch(BRAND.menuURL,{cache:"no-cache"});
+    const data = await res.json();
+    menu = normalizeMenu(data);
+  }catch{
+    menu = normalizeMenu([
+      {id:1,name:"Sample Item",category:"General",price:100,image:"https://via.placeholder.com/300"}
+    ]);
+  }
+  renderCategories();
+  renderMenu();
+}
+
+function normalizeMenu(data){
+  return data.map(i=>Array.isArray(i)?{
+    id:i[0],name:i[1],category:i[2],price:+i[3],image:i[5]
+  }:i);
+}
+
+function renderCategories(){
+  const cats=["All",...new Set(menu.map(i=>i.category))];
+  categories.innerHTML=cats.map(c=>
+    `<div class="category ${c==="All"?"active":""}" onclick="setCat('${c}',this)">${c}</div>`
+  ).join("");
+}
+
+function setCat(cat,el){
+  currentCategory=cat;
+  document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  renderMenu();
+}
+
+function renderMenu(){
+  menu.innerHTML="";
+  document.getElementById("menu").innerHTML=
+    menu.filter(i=>currentCategory==="All"||i.category===currentCategory)
+    .map(i=>`
+      <div class="item-card">
+        <div class="item-image"><img src="${i.image}"></div>
+        <div class="item-name">${i.name}</div>
+        <div class="item-price">₹${i.price}</div>
+        <button class="add-btn" onclick="add(${i.id})">ADD</button>
+      </div>
+    `).join("");
+}
+
+/* ---------------- CART ---------------- */
+function add(id){
+  const item=menu.find(i=>i.id===id);
+  const c=cart.find(i=>i.id===id);
+  c?c.qty++:cart.push({...item,qty:1});
+  updateCart();
+}
+
+function updateCart(){
+  const count=cart.reduce((a,b)=>a+b.qty,0);
+  const total=cart.reduce((a,b)=>a+b.qty*b.price,0);
+  countEl.textContent=count;
+  totalEl.textContent="₹"+total;
+  cartBar.classList.toggle("show",count>0);
+  localStorage.setItem(`cart_${brandKey}_${table}`,JSON.stringify(cart));
+}
+
+const countEl=document.getElementById("count");
+const totalEl=document.getElementById("total");
+const cartBar=document.getElementById("cartBar");
+
+/* ---------------- CHECKOUT ---------------- */
+async function checkout(){
+  if(!cart.length)return;
+  loader.classList.add("show");
+  try{
+    await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"placeOrder",brand:brandKey,table,items:cart})
     });
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-    
-    const text = await res.text();
-    console.log('Raw API response:', text); // Debug log
-    
-    let menuData;
-    try {
-      menuData = JSON.parse(text);
-    } catch (jsonError) {
-      console.error('JSON parse failed:', jsonError, text);
-      throw new Error('Invalid JSON response from server');
-    }
-    
-    if (!Array.isArray(menuData) || menuData.length === 0) {
-      throw new Error('Empty menu received');
-    }
-    
-    menu = menuData;
-    displayCategories();
-    displayMenu();
-    
-  } catch (error) {
-    console.error('Menu load failed:', error);
-    
-    // Show offline/sample menu
-    menu = [
-      {id:1, name:'Paneer Tikka', category:'Starter', full_price:250, image:'https://via.placeholder.com/300x200/00FF00?text=Paneer+Tikka'},
-      {id:2, name:'Dal Makhani', category:'Main Course', full_price:200, image:'https://via.placeholder.com/300x200/FF9900?text=Dal+Makhani'},
-      {id:3, name:'Masala Dosa', category:'South Indian', full_price:180, image:'https://via.placeholder.com/300x200/FF0000?text=Masala+Dosa'},
-      {id:4, name:'Mango Lassi', category:'Beverage', full_price:80, image:'https://via.placeholder.com/300x200/FFD700?text=Mango+Lassi'}
-    ];
-    displayCategories();
-    displayMenu();
-    
-    // Show warning
-    grid.insertAdjacentHTML('afterend', 
-      '<div style="padding:1rem;background:#fff3cd;border-radius:8px;margin:1rem;text-align:center;font-weight:600;color:#856404">⚠️ Offline Mode - Showing sample menu. Full menu loads when online.</div>'
-    );
+    alert("Order sent to kitchen");
+    cart=[];
+    updateCart();
+  }catch{
+    alert("Offline: Order saved");
+  }finally{
+    loader.classList.remove("show");
   }
 }
+</script>
 
-    
-    function displayCategories() {
-      const cats = ['All', ...new Set(menu.map(item => item[2]))];
-      document.getElementById('categories').innerHTML = cats.map(cat => 
-        `<div class="category ${cat === 'All' ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</div>`
-      ).join('');
-    }
-    
-    function displayMenu() {
-      const grid = document.getElementById('menu-grid');
-      grid.innerHTML = menu.filter(item => currentCategory === 'All' || item[2] === currentCategory)
-        .map(item => `
-          <div class="item-card">
-            <div class="item-image">
-              <img src="${item[5]}" alt="${item[1]}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200/DDD'">
-              <div class="veg-badge">🌱 Veg</div>
-            </div>
-            <div class="item-name">${item[1]}</div>
-            <div class="item-price">₹${item[3]}</div>
-            <button class="add-btn" onclick="addToCart(${item[0]})">ADD</button>
-          </div>
-        `).join('');
-    }
-    
-    function filterCategory(cat) {
-      currentCategory = cat;
-      document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
-      displayMenu();
-    }
-    
-    function addToCart(id) {
-      const item = menu.find(m => m[0] == id);
-      const cartItem = cart.find(c => c.id === id);
-      
-      if (cartItem) {
-        cartItem.qty++;
-      } else {
-        cart.push({id: id, name: item[1], price: parseFloat(item[3]), qty: 1});
-      }
-      
-      updateCartUI();
-      animateAddButton(event.target);
-    }
-    
-    function updateCartUI() {
-      const count = cart.reduce((sum, item) => sum + item.qty, 0);
-      const subtotal = cart.reduce((sum, item) => sum + (item.qty * item.price), 0);
-      
-      document.getElementById('cart-count').textContent = count;
-      document.getElementById('subtotal').textContent = `₹${subtotal}`;
-      document.getElementById('cart-bar').classList.toggle('show', count > 0);
-      displayCartSheet();
-    }
-    
-    function displayCartSheet() {
-      document.getElementById('cart-items').innerHTML = cart.map(item => `
-        <div class="cart-item">
-          <div>
-            <div>${item.name}</div>
-            <div>₹${item.price * item.qty}</div>
-          </div>
-          <div class="qty-controls">
-            <button class="qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
-            <span>${item.qty}</span>
-            <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-          </div>
-        </div>
-      `).join('');
-    }
-    
-    function updateQty(id, delta) {
-      const item = cart.find(c => c.id === id);
-      if (item) {
-        item.qty = Math.max(1, item.qty + delta);
-        if (item.qty === 0) cart = cart.filter(c => c.id !== id);
-        updateCartUI();
-      }
-    }
-    
-    document.getElementById('checkout-btn').onclick = () => {
-      if (!tableNum) {
-        tableNum = prompt('Enter Table Number (T1, T2, etc.):');
-        if (!tableNum) return;
-      }
-      checkout();
-    };
-    
-    async function checkout() {
-      const loader = document.getElementById('loader');
-      loader.classList.add('show');
-      
-      try {
-        // Simulate processing
-        playBell();
-        speechSynthesis.speak(new SpeechSynthesisUtterance(`Order received. KOT ${Math.random().toString(36).substr(2, 3).toUpperCase()}`));
-        
-        const res = await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
-          method: 'POST',
-          body: JSON.stringify({action: 'placeOrder', table: tableNum, items: cart})
-        });
-        const result = await res.json();
-        
-        if (result.success) {
-          confetti();
-          alert(`Order sent! KOT: ${result.kot}`);
-          cart = []; tableNum = '';
-          updateCartUI();
-        }
-      } catch(e) {
-        alert('Order failed. Please try again.');
-      } finally {
-        loader.classList.remove('show');
-      }
-    }
-    
-    function animateAddButton(btn) {
-      btn.style.transform = 'scale(0.95)';
-      setTimeout(() => btn.style.transform = '', 150);
-    }
-    
-    function playBell() {
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAo'); 
-      audio.play().catch(() => {});
-    }
-    
-    // Search
-    document.getElementById('search').oninput = (e) => {
-      const term = e.target.value.toLowerCase();
-      document.querySelectorAll('.item-card').forEach(card => {
-        card.style.display = card.textContent.toLowerCase().includes(term) ? 'block' : 'none';
-      });
-    };
-    
-    // Auto-detect table from URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    tableNum = urlParams.get('table') || '';
-    
-    loadMenu();
-  </script>
-
-  <script>
-    // Offline order queue management
-let syncQueue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
-let isOnline = navigator.onLine;
-
-// Register sync when online
-window.addEventListener('online', () => {
-  isOnline = true;
-  if ('serviceWorker' in navigator && 'sync' in window.navigator.serviceWorker) {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.sync.register('sync-queue');
-    });
-  }
-  checkSyncStatus();
-});
-
-window.addEventListener('offline', () => {
-  isOnline = false;
-  showOfflineWarning();
-});
-
-// Enhanced checkout with offline support
-async function checkout() {
-  const loader = document.getElementById('loader');
-  loader.classList.add('show');
-  
-  const orderData = {
-    action: 'placeOrder', 
-    table: tableNum, 
-    items: cart,
-    offline: !isOnline,
-    timestamp: Date.now()
-  };
-  
-  try {
-    if (isOnline) {
-      // Online - send immediately
-      const res = await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(orderData)
-      });
-      const result = await res.json();
-      
-      if (result.success) {
-        playBell();
-        speechSynthesis.speak(new SpeechSynthesisUtterance(`Order received. KOT ${result.kot}`));
-        confetti();
-        cart = []; 
-        updateCartUI();
-      }
-    } else {
-      // Offline - queue for sync
-      queueOrder(orderData);
-      playBell();
-      speechSynthesis.speak(new SpeechSynthesisUtterance('Order queued. Will sync when online.'));
-      showConfetti();
-      cart = []; 
-      updateCartUI();
-      showSyncStatus('queued');
-    }
-  } catch(e) {
-    // Network error - treat as offline
-    queueOrder(orderData);
-    speechSynthesis.speak(new SpeechSynthesisUtterance('Order queued for sync'));
-    cart = []; 
-    updateCartUI();
-    showSyncStatus('queued');
-  } finally {
-    loader.classList.remove('show');
-  }
-}
-
-function queueOrder(orderData) {
-  const localKOT = `OFF${Date.now().toString().slice(-6)}`;
-  orderData.localKOT = localKOT;
-  
-  syncQueue.unshift(orderData);
-  localStorage.setItem('syncQueue', JSON.stringify(syncQueue));
-  localStorage.setItem('localOrders', JSON.stringify([
-    ...JSON.parse(localStorage.getItem('localOrders') || '[]'),
-    {...orderData, synced: false}
-  ]));
-}
-
-function checkSyncStatus() {
-  const pending = syncQueue.filter(item => item.data.action === 'placeOrder').length;
-  if (pending > 0) {
-    document.getElementById('sync-status')?.textContent?.(`Syncing ${pending} orders...`);
-  }
-}
-
-// Add sync status UI to cart bar
-// Add this after cart-count in HTML:
-document.getElementById('cart-bar').insertAdjacentHTML('afterbegin', 
-  '<div id="sync-status" style="color:#ffc107;font-size:0.8rem;"></div>'
-);
-
-// Offline warning
-function showOfflineWarning() {
-  // Show toast notification
-  const toast = document.createElement('div');
-  toast.innerHTML = '⚠️ Offline Mode - Orders will sync automatically';
-  toast.style.cssText = `
-    position:fixed;top:20px;right:20px;background:#ffc107;color:black;
-    padding:1rem;border-radius:8px;z-index:10000;font-weight:600;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 5000);
-}
-
-  </script>
 </body>
 </html>
