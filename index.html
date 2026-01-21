@@ -728,5 +728,118 @@
     
     loadMenu();
   </script>
+
+  <script>
+    // Offline order queue management
+let syncQueue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+let isOnline = navigator.onLine;
+
+// Register sync when online
+window.addEventListener('online', () => {
+  isOnline = true;
+  if ('serviceWorker' in navigator && 'sync' in window.navigator.serviceWorker) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.sync.register('sync-queue');
+    });
+  }
+  checkSyncStatus();
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  showOfflineWarning();
+});
+
+// Enhanced checkout with offline support
+async function checkout() {
+  const loader = document.getElementById('loader');
+  loader.classList.add('show');
+  
+  const orderData = {
+    action: 'placeOrder', 
+    table: tableNum, 
+    items: cart,
+    offline: !isOnline,
+    timestamp: Date.now()
+  };
+  
+  try {
+    if (isOnline) {
+      // Online - send immediately
+      const res = await fetch('https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(orderData)
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        playBell();
+        speechSynthesis.speak(new SpeechSynthesisUtterance(`Order received. KOT ${result.kot}`));
+        confetti();
+        cart = []; 
+        updateCartUI();
+      }
+    } else {
+      // Offline - queue for sync
+      queueOrder(orderData);
+      playBell();
+      speechSynthesis.speak(new SpeechSynthesisUtterance('Order queued. Will sync when online.'));
+      showConfetti();
+      cart = []; 
+      updateCartUI();
+      showSyncStatus('queued');
+    }
+  } catch(e) {
+    // Network error - treat as offline
+    queueOrder(orderData);
+    speechSynthesis.speak(new SpeechSynthesisUtterance('Order queued for sync'));
+    cart = []; 
+    updateCartUI();
+    showSyncStatus('queued');
+  } finally {
+    loader.classList.remove('show');
+  }
+}
+
+function queueOrder(orderData) {
+  const localKOT = `OFF${Date.now().toString().slice(-6)}`;
+  orderData.localKOT = localKOT;
+  
+  syncQueue.unshift(orderData);
+  localStorage.setItem('syncQueue', JSON.stringify(syncQueue));
+  localStorage.setItem('localOrders', JSON.stringify([
+    ...JSON.parse(localStorage.getItem('localOrders') || '[]'),
+    {...orderData, synced: false}
+  ]));
+}
+
+function checkSyncStatus() {
+  const pending = syncQueue.filter(item => item.data.action === 'placeOrder').length;
+  if (pending > 0) {
+    document.getElementById('sync-status')?.textContent?.(`Syncing ${pending} orders...`);
+  }
+}
+
+// Add sync status UI to cart bar
+// Add this after cart-count in HTML:
+document.getElementById('cart-bar').insertAdjacentHTML('afterbegin', 
+  '<div id="sync-status" style="color:#ffc107;font-size:0.8rem;"></div>'
+);
+
+// Offline warning
+function showOfflineWarning() {
+  // Show toast notification
+  const toast = document.createElement('div');
+  toast.innerHTML = '⚠️ Offline Mode - Orders will sync automatically';
+  toast.style.cssText = `
+    position:fixed;top:20px;right:20px;background:#ffc107;color:black;
+    padding:1rem;border-radius:8px;z-index:10000;font-weight:600;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+  </script>
 </body>
 </html>
