@@ -116,7 +116,7 @@ async function loadMenu(){
       { cache: "no-store" }
     );
     const text = await res.text();
-
+console.table(rows);
     // Try JSON parse
     const json = JSON.parse(text);
     rows = Array.isArray(json) ? json : json.data;
