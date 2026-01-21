@@ -32,36 +32,36 @@ self.addEventListener('activate', event => {
 
 // Fetch
 self.addEventListener('fetch', event => {
-  const { request } = event;
+  const request = event.request;
 
-  // Ignore non-GET
+  // Only handle GET
   if (request.method !== 'GET') return;
 
-  // 🚫 Never cache Google Apps Script (menu API)
-  if (request.url.includes('script.google.com')) {
-    return;
-  }
+  // Never touch Google Apps Script APIs
+  if (request.url.includes('script.google.com')) return;
 
-  // HTML pages → cache first
-  if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(
-      caches.match(request).then(cached =>
-        cached || fetch(request).then(res => {
-          caches.open(CACHE_NAME).then(c => c.put(request, res.clone()));
-          return res;
-        })
-      )
-    );
-    return;
-  }
-
-  // JS / CSS / images → cache first, network fallback
   event.respondWith(
-    caches.match(request).then(cached =>
-      cached || fetch(request).then(res => {
-        caches.open(CACHE_NAME).then(c => c.put(request, res.clone()));
-        return res;
-      })
-    )
+    caches.match(request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(request)
+        .then(response => {
+          // Cache successful responses only
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => {
+          // ✅ SAFE FALLBACKS
+          if (request.headers.get("accept")?.includes("text/html")) {
+            return caches.match("./index.html");
+          }
+
+          // For images / css / js → fail silently
+          return new Response("", { status: 204 });
+        });
+    })
   );
 });
