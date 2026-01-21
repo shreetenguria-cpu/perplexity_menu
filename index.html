@@ -108,18 +108,41 @@ const portionOptions = document.getElementById("portionOptions");
 
 /* ---------- LOAD MENU ---------- */
 async function loadMenu(){
+  let rows = [];
+
   try{
-    const res = await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu");
-    const json = await res.json();
-    const rows = Array.isArray(json) ? json : json.data;
-    menu = rows.map(r=>({
-      id:r[0], name:r[1], category:r[2],
-      fullPrice:+r[3]||0, halfPrice:+r[4]||0,
-      image:r[5]||"https://via.placeholder.com/300"
-    }));
-  }catch{
-    menu=[{id:1,name:"Sample Item",category:"General",fullPrice:120,halfPrice:70,image:"https://via.placeholder.com/300"}];
+    const res = await fetch(
+      "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu",
+      { cache: "no-store" }
+    );
+    const text = await res.text();
+
+    // Try JSON parse
+    const json = JSON.parse(text);
+    rows = Array.isArray(json) ? json : json.data;
+
+  }catch(err){
+    console.warn("Using offline menu", err);
   }
+
+  // ✅ ALWAYS HAVE DATA
+  if (!Array.isArray(rows) || !rows.length) {
+    rows = [
+      [1,"Paneer Butter Masala","Main Course",250,150,"https://via.placeholder.com/300"],
+      [2,"Dal Makhani","Main Course",220,0,"https://via.placeholder.com/300"],
+      [3,"Masala Dosa","South Indian",180,0,"https://via.placeholder.com/300"]
+    ];
+  }
+
+  menu = rows.map(r=>({
+    id:r[0],
+    name:r[1],
+    category:r[2],
+    fullPrice:+r[3]||0,
+    halfPrice:+r[4]||0,
+    image:r[5]||"https://via.placeholder.com/300"
+  }));
+
   renderCategories();
   renderMenu();
 }
