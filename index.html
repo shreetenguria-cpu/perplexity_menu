@@ -176,7 +176,7 @@ async function loadMenu(){
 /* ---------- UI ---------- */
 function renderCategories(){
   const cats=["All",...new Set(
-    menu.filter(i=>i.brand===brandKey).map(i=>i.category)
+    menu.filter(i=>i.brand===brandKey)   //.map(i=>i.category)
   )];
   categoriesEl.innerHTML=cats.map(c=>
     `<div class="category ${c==="All"?"active":""}" onclick="setCategory('${c}',this)">${c}</div>`
