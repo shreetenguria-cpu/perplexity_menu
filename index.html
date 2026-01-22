@@ -165,11 +165,14 @@ async function loadMenu(){
 
 /* ---------- UI ---------- */
 function renderCategories(){
-  const cats=["All",...new Set(menu.map(i=>i.category))];
+  const cats=["All",...new Set(
+    menu.filter(i=>i.brand===brandKey).map(i=>i.category)
+  )];
   categoriesEl.innerHTML=cats.map(c=>
     `<div class="category ${c==="All"?"active":""}" onclick="setCategory('${c}',this)">${c}</div>`
   ).join("");
 }
+
 
 function setCategory(cat,el){
   currentCategory=cat;
@@ -179,8 +182,11 @@ function setCategory(cat,el){
 }
 
 function renderMenu(){
-  menuEl.innerHTML=menu
-    .filter(i=>currentCategory==="All"||i.category===currentCategory)
+  menuEl.innerHTML = menu
+    .filter(i =>
+      i.brand === brandKey &&
+      (currentCategory==="All" || i.category===currentCategory)
+    )
     .map(i=>`
       <div class="item-card">
         <div class="item-image"><img src="${i.image||'https://via.placeholder.com/300'}"></div>
@@ -193,6 +199,7 @@ function renderMenu(){
       </div>
     `).join("");
 }
+
 
 /* ---------- PORTION ---------- */
 function openPortion(id){
