@@ -4,7 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shreeji Digital Menu</title>
-
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "41c4e161-899f-44ef-8879-ac5ba45f6307",
+    });
+  });
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui;background:#f8f9fa}
@@ -43,11 +51,15 @@ body{font-family:system-ui;background:#f8f9fa}
   cursor:pointer
 }
 
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6b35">
+
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .portion-card{display:flex;justify-content:space-between;padding:.8rem;border:1px solid #ddd;border-radius:10px;cursor:pointer}
 .portion-card.active{border-color:#ff6b35;background:#fff4ee}
 </style>
 </head>
+<button id="installBtn" class="checkout-btn" style="display:none">📲 Install App</button>
 
 <body>
 
@@ -88,6 +100,28 @@ const params = new URLSearchParams(location.search);
 const brandKey = params.get("brand") || "restaurant";
 const BRAND = BRAND_CONFIG[brandKey];
 document.querySelector(".logo").textContent = BRAND.name;
+
+
+  const BRAND_OFFERS = {
+  cafe: { title:"☕ Cafe Offer", text:"Free Cookie with any Coffee today!" },
+  restaurant: { title:"🍽️ Family Deal", text:"₹50 OFF on orders above ₹399" },
+  pizzaghar: { title:"🍕 PizzaGhar Deal", text:"FREE Dip / Cold Drink with Pizza" }
+};
+
+function showBrandOffer(){
+  const key = brandKey + "_offer_seen";
+  if(localStorage.getItem(key)) return;
+  document.getElementById("offerTitle").textContent = BRAND_OFFERS[brandKey].title;
+  document.getElementById("offerText").textContent = BRAND_OFFERS[brandKey].text;
+  document.getElementById("brandOffer").style.display="flex";
+  localStorage.setItem(key,"1");
+}
+
+function closeOffer(){
+  document.getElementById("brandOffer").style.display="none";
+}
+
+setTimeout(showBrandOffer,1500);
 
 /* ---------- STATE ---------- */
 let menu=[], cart=[], selectedItem=null, selectedPortion="full";
@@ -212,6 +246,16 @@ window.addEventListener("online",()=>{
   localStorage.removeItem(QUEUE_KEY);
 });
 
+  let deferredPrompt;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById("installBtn").style.display="block";
+});
+document.getElementById("installBtn").onclick=()=>{
+  deferredPrompt.prompt();
+};
+
 function checkout(){
   if(!cart.length)return;
   const order={
@@ -229,6 +273,15 @@ portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="
 
 loadMenu();
 </script>
+
+  <!-- Brand Offer Popup -->
+<div id="brandOffer" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:999">
+  <div style="background:#fff;padding:1.2rem;border-radius:16px;width:90%;max-width:320px;text-align:center">
+    <h3 id="offerTitle"></h3>
+    <p id="offerText"></p>
+    <button class="checkout-btn" onclick="closeOffer()">Order Now</button>
+  </div>
+</div>
 
 </body>
 </html>
