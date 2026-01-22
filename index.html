@@ -111,11 +111,9 @@ const portionOptions=document.getElementById("portionOptions");
 async function loadMenu(){
   const res = await fetch(
     "https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu",
-    {cache:"no-store"}
+    { cache: "no-store" }
   );
-  const data = await res.json();
-
-  menu = data.filter(i => i.brand === BRAND.sheetBrand);
+  menu = await res.json(); // ⬅️ NO BRAND FILTER
   renderCategories();
   renderMenu();
 }
