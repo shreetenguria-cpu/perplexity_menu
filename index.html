@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,6 +49,10 @@ body{font-family:system-ui;background:#f8f9fa}
   <div style="display:flex;justify-content:space-between">
     <span>Cart <b id="count">0</b></span>
     <span id="total">₹0</span>
+    <button onclick="checkout()" class="checkout-btn">
+  Send to Kitchen
+</button>
+
   </div>
 </div>
 
@@ -84,12 +89,53 @@ const cartSheet=document.getElementById("cartSheet");
 const cartItems=document.getElementById("cartItems");
 const cartTotal=document.getElementById("cartTotal");
 
+  const BRAND_CONFIG = {
+  cafe: {
+    name: "☕ Shreeji Cafe",
+    sheetBrand: "Cafe"
+  },
+  restaurant: {
+    name: "🍽️ Shreeji Restaurant",
+    sheetBrand: "Restaurant"
+  },
+  pizzaghar: {
+    name: "🍕 PizzaGhar",
+    sheetBrand: "PizzaGhar"
+  }
+};
+const QUEUE_KEY = `orderQueue_${brandKey}`;
+let orderQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+
+const params = new URLSearchParams(location.search);
+const brandKey = params.get("brand") || "restaurant";
+const BRAND = BRAND_CONFIG[brandKey];
+document.querySelector(".logo").textContent = BRAND.name;
+
+  const order = {
+  brand: brandKey,
+  table: "T1",
+  items: cart,
+  time: new Date().toLocaleString()
+};
+
 async function loadMenu(){
   const res = await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec?action=menu",{cache:"no-store"});
   menu = await res.json();
   renderCategories();
   renderMenu();
 }
+
+  async function postOrder(order){
+  await fetch("https://script.google.com/macros/s/AKfycbz2x-z27L-qt_pQyZ8mDy-Nw-SmbM-U4FLrNtE9FRkWgoN2vHn0eHjOTc6E_5UgV_fU/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "placeOrder",
+      order
+    })
+  });
+}
+
 
 function renderCategories(){
   const cats=["All",...new Set(menu.map(i=>i.category))];
@@ -103,7 +149,7 @@ function filterCat(cat,el){
 }
 
 function renderMenu(cat="All"){
-  menuEl.innerHTML=menu.filter(i=>cat==="All"||i.category===cat).map(i=>`
+  menuEl.innerHTML=menu.filter(i => i.brand === BRAND.sheetBrand).map(i=>`
     <div class="item-card">
       <div class="item-image"><img src="${i.image||'https://via.placeholder.com/300'}"></div>
       <div class="item-name">${i.name}</div>
@@ -159,6 +205,41 @@ function openCart(){
 
 cartSheet.onclick=e=>{if(e.target===cartSheet)cartSheet.style.display="none";}
 portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
+
+  function sendOrder(order){
+  if(!navigator.onLine){
+    order.offline = true;
+    orderQueue.push(order);
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(orderQueue));
+    alert("Offline: Order saved, will sync automatically");
+    return;
+  }
+  postOrder(order);
+}
+
+  window.addEventListener("online", () => {
+  orderQueue.forEach(o => postOrder(o));
+  orderQueue = [];
+  localStorage.removeItem(QUEUE_KEY);
+});
+
+  function checkout(){
+  if(!cart.length) return;
+
+  const order = {
+    brand: brandKey,
+    table: "T1",
+    items: cart,
+    time: new Date().toLocaleString()
+  };
+
+  sendOrder(order);
+
+  cart = [];
+  updateCart();
+  alert("Order sent to kitchen");
+}
+
 
 loadMenu();
 </script>
