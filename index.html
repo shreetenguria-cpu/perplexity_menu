@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shreeji Digital Menu</title>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G0TTCC4DH1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-G0TTCC4DH1');
+</script>
+   <!-- one signal -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
@@ -267,6 +278,12 @@ function checkout(){
   sendOrder(order);
   cart=[];updateCart();
   alert("Order sent to kitchen");
+ 
+  gtag('event','order_placed',{
+  brand: brandKey,
+  value: cart.reduce((a,b)=>a+b.qty*b.price,0)
+});
+
 }
 
 portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
