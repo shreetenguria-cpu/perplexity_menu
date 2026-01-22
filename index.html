@@ -5,25 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shreeji Digital Menu</title>
 
-  <!-- Google tag (gtag.js) -->
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6b35">
+
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G0TTCC4DH1"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-G0TTCC4DH1');
+</script>
 
-  gtag('config', 'G-G0TTCC4DH1');
-</script>
-   <!-- one signal -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "41c4e161-899f-44ef-8879-ac5ba45f6307",
-    });
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "41c4e161-899f-44ef-8879-ac5ba45f6307",
   });
+});
 </script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui;background:#f8f9fa}
@@ -70,9 +75,12 @@ body{font-family:system-ui;background:#f8f9fa}
 .portion-card.active{border-color:#ff6b35;background:#fff4ee}
 </style>
 </head>
-<button id="installBtn" class="checkout-btn" style="display:none">📲 Install App</button>
+
 
 <body>
+<button id="installBtn" class="checkout-btn" style="display:none;margin:10px">
+  📲 Install App
+</button>
 
 <div class="header">
   <div class="logo"></div>
@@ -111,6 +119,9 @@ const params = new URLSearchParams(location.search);
 const brandKey = params.get("brand") || "restaurant";
 const BRAND = BRAND_CONFIG[brandKey];
 document.querySelector(".logo").textContent = BRAND.name;
+gtag('event','brand_view',{
+  brand: brandKey
+});
 
 
   const BRAND_OFFERS = {
@@ -283,14 +294,16 @@ function checkout(){
     time:new Date().toLocaleString()
   };
   sendOrder(order);
-  cart=[];updateCart();
-  alert("Order sent to kitchen");
- 
-  gtag('event','order_placed',{
+
+   gtag('event','order_placed',{
   brand: brandKey,
   value: cart.reduce((a,b)=>a+b.qty*b.price,0)
 });
 
+  cart=[];updateCart();
+  alert("Order sent to kitchen");
+ 
+ 
 }
 
 portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
