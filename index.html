@@ -67,8 +67,6 @@ body{font-family:system-ui;background:#f8f9fa}
   cursor:pointer
 }
 
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff6b35">
 
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .portion-card{display:flex;justify-content:space-between;padding:.8rem;border:1px solid #ddd;border-radius:10px;cursor:pointer}
@@ -78,12 +76,13 @@ body{font-family:system-ui;background:#f8f9fa}
 
 
 <body>
-<button id="installBtn" class="checkout-btn" style="display:none;margin:10px">
-  📲 Install App
-</button>
+
 
 <div class="header">
   <div class="logo"></div>
+  <button id="installBtn" class="checkout-btn" style="display:none;margin:10px">
+  📲 Install App
+</button>
   <input class="search" placeholder="Search items">
   <div class="categories" id="categories"></div>
 </div>
@@ -286,25 +285,30 @@ document.getElementById("installBtn").onclick=()=>{
 };
 
 function checkout(){
-  if(!cart.length)return;
-  const order={
-    brand:brandKey,
-    table:"T1",
-    items:cart,
-    time:new Date().toLocaleString()
+  if(!cart.length) return;
+
+  const orderValue = cart.reduce((a,b)=>a + (b.qty * b.price), 0);
+
+  const order = {
+    brand: brandKey,
+    table: "T1",
+    items: cart,
+    time: new Date().toLocaleString()
   };
+
   sendOrder(order);
 
-   gtag('event','order_placed',{
-  brand: brandKey,
-  value: cart.reduce((a,b)=>a+b.qty*b.price,0)
-});
+  // Analytics (BEFORE clearing cart)
+  gtag('event','order_placed',{
+    brand: brandKey,
+    value: orderValue
+  });
 
-  cart=[];updateCart();
+  cart = [];
+  updateCart();
   alert("Order sent to kitchen");
- 
- 
 }
+
 
 portionSheet.onclick=e=>{if(e.target===portionSheet)portionSheet.style.display="none";}
 
